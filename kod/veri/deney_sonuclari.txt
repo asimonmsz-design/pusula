@@ -1,0 +1,37 @@
+==============================================================================
+PUSULA - DENEY SONUCLARI
+==============================================================================
+Icerik havuzu      : 2000 sentetik Turkce gonderi
+Akis uzunlugu      : ilk 20 gonderi
+Karsilastirilan    : Klasik (etkilesim odakli) vs PUSULA (niyet odakli)
+Adil baseline      : Iki algoritma da ayni cesitlilik kisiti ve
+                     temel spam filtresiyle calistirilmistir.
+
+NIYET             UYUM-K  UYUM-P  TATMIN-K  TATMIN-P  PISM-K  PISM-P   CB-K   CB-P
+------------------------------------------------------------------------------
+Ogrenmek           0.264   0.914     0.161     0.778   0.390   0.149    25%     0%
+Eglenmek           0.553   0.714     0.337     0.567   0.390   0.205    25%     0%
+Haberdar olmak     0.433   0.857     0.264     0.714   0.390   0.167    25%     0%
+Sosyallesmek       0.186   0.777     0.113     0.675   0.390   0.130    25%     0%
+Sadece dolasmak    0.557   0.737     0.340     0.580   0.390   0.213    25%     0%
+------------------------------------------------------------------------------
+ORTALAMA           0.398   0.800     0.243     0.663   0.390   0.173    25%     0%
+
+K = Klasik algoritma, P = PUSULA
+UYUM   : niyet uyumu (yuksek iyi)
+TATMIN : beklenen tatmin = uyum x (1 - pismanlik) (yuksek iyi)
+PISM   : ortalama pismanlik olasiligi (dusuk iyi)
+CB     : akistaki clickbait orani (dusuk iyi)
+
+==============================================================================
+OZET
+==============================================================================
+Beklenen tatmin      : 0.243 -> 0.663  (+173%)
+Pismanlik olasiligi  : 0.390 -> 0.173  (-56%)
+Niyet uyumu          : 0.398 -> 0.800  (+101%)
+Clickbait orani      : 25.0% -> 0.0%
+Etkilesim puani      : 0.866 -> 0.583  (-33%)
+
+NOT: Bu sonuclar sentetik veri uzerinde alinmistir. Gercek kullanici
+verisiyle mutlak degerlerin degismesi beklenir; anlamli olan, iki
+algoritma arasindaki YONSEL farktir.
