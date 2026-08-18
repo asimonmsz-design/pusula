@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# İşletim sistemi
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Editör
+.vscode/
+.idea/
+*.swp
+
+# Word geçici dosyaları
+~$*.docx
+~$*.doc
+
+# Depoya girmeyen içerik
+# Teknik rapor yarışmaya ayrıca teslim edildiği için burada paylaşılmaz.
+ozel/
+rapor/
