@@ -23,3 +23,6 @@ desktop.ini
 # Teknik rapor yarışmaya ayrıca teslim edildiği için burada paylaşılmaz.
 ozel/
 rapor/
+
+# Kirpilmamis ekran goruntusu yedekleri (yalnizca yerelde durur)
+tasarim/ekran/ham-*.png
