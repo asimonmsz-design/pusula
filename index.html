@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<meta name="description" content="PUSULA — niyet odaklı sosyal medya akışı prototipi. NSosyal İnovasyon Yarışması 2026.">
+<title>PUSULA — Niyet Odaklı Akış</title>
+<style>
+  :root {
+    --zemin: #0b1417;
+    --yuzey: #101e22;
+    --metin: #e6f0f2;
+    --sonuk: #9fb3b8;
+    --aksan: #4fd1c5;
+    --cizgi: #1e3238;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --zemin: #f4f7f8;
+      --yuzey: #ffffff;
+      --metin: #12232a;
+      --sonuk: #4d666e;
+      --aksan: #0a6e76;
+      --cizgi: #d6e2e5;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: var(--zemin);
+    color: var(--metin);
+    font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    line-height: 1.55;
+  }
+  main {
+    max-width: 560px;
+    background: var(--yuzey);
+    border: 1px solid var(--cizgi);
+    border-radius: 16px;
+    padding: 34px 30px;
+  }
+  h1 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 34px;
+    letter-spacing: .02em;
+    margin: 0 0 6px;
+  }
+  .alt { color: var(--sonuk); margin: 0 0 22px; font-size: 15px; }
+  p { margin: 0 0 16px; }
+  a.birincil {
+    display: inline-block;
+    background: var(--aksan);
+    color: var(--zemin);
+    text-decoration: none;
+    font-weight: 700;
+    padding: 13px 22px;
+    border-radius: 10px;
+  }
+  a.birincil:hover { filter: brightness(1.08); }
+  a.birincil:focus-visible,
+  a.ikincil:focus-visible { outline: 3px solid var(--aksan); outline-offset: 3px; }
+  a.ikincil { color: var(--aksan); }
+  ul { color: var(--sonuk); font-size: 14px; padding-left: 20px; margin: 20px 0 0; }
+  li { margin-bottom: 5px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>PUSULA</h1>
+  <p class="alt">Niyet odaklı akış ve dijital refah sistemi · NSosyal İnovasyon Yarışması 2026</p>
+
+  <p>Sosyal medya akışını içeriğin etkileşim potansiyeline göre değil, kullanıcının
+     oturum başında beyan ettiği niyete uyumuna göre sıralayan bir arayüz ve öneri sistemi.</p>
+
+  <p><a class="birincil" href="tasarim/pusula.html">Çalışan prototipi aç</a></p>
+
+  <ul>
+    <li>Kurulum gerekmez; prototip tek dosyadır ve tarayıcıda çalışır.</li>
+    <li>Kaynak kod ve ölçüm betikleri:
+        <a class="ikincil" href="https://github.com/asimonmsz-design/pusula">github.com/asimonmsz-design/pusula</a></li>
+    <li>"Karşılaştırma" sekmesi klasik sıralamayla PUSULA sıralamasını yan yana gösterir.</li>
+  </ul>
+</main>
+</body>
+</html>
