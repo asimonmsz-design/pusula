@@ -1,0 +1,1063 @@
+<title>PUSULA — Niyet Odaklı Akış Prototipi</title>
+
+<style>
+/* ─────────────────────────────────────────────────────────────
+   PUSULA — Tasarım Sistemi
+
+   Renk metaforu: gündüz ışığından alacakaranlığa.
+   Zaman bütçesi doldukça arayüz serin turkuazdan sıcak altına kayar.
+   Bu dekoratif değil, anlamlı: serin = taze oturum, sıcak = harcanan zaman.
+
+   Aksan rengi pusula/deniz haritası dünyasından: derin prusya turkuazı.
+   ───────────────────────────────────────────────────────────── */
+
+:root {
+  --zemin:      #ECF2F2;
+  --yuzey:      #FFFFFF;
+  --yuzey-alt:  #F5FAFA;
+  --murekkep:   #0E2226;
+  --sonuk:      #4E6A6E;
+  --cizgi:      #CFE0E0;
+  --aksan:      #0A6E76;
+  --aksan-acik: #DAF0F1;
+  --aksan-ustu: #FFFFFF;
+  --kor:        #A32E22;
+  --kor-acik:   #FBE6E3;
+  --iyi:        #0A7A6C;
+  --uyari:      #A32E22;
+  --kotu:       #B0281A;
+
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Charter, Georgia, serif;
+  --sans: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+  --mono: "Cascadia Mono", "Cascadia Code", "SF Mono", "Roboto Mono", ui-monospace, monospace;
+
+  --r: 10px;
+  --sicaklik: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --zemin:      #06171A;
+    --yuzey:      #0D2226;
+    --yuzey-alt:  #132C31;
+    --murekkep:   #DDECED;
+    --sonuk:      #8DA9AC;
+    --cizgi:      #1E3B41;
+    --aksan:      #3FC8D4;
+    --aksan-acik: #0E353B;
+    --aksan-ustu: #06171A;
+    --kor:        #F08272;
+    --kor-acik:   #3A1D19;
+    --iyi:        #3ECBB4;
+    --uyari:      #F08272;
+    --kotu:       #FF7A66;
+  }
+}
+
+:root[data-theme="dark"] {
+  --zemin:      #06171A;
+  --yuzey:      #0D2226;
+  --yuzey-alt:  #132C31;
+  --murekkep:   #DDECED;
+  --sonuk:      #8DA9AC;
+  --cizgi:      #1E3B41;
+  --aksan:      #3FC8D4;
+  --aksan-acik: #0E353B;
+  --aksan-ustu: #06171A;
+  --kor:        #F08272;
+  --kor-acik:   #3A1D19;
+  --iyi:        #3ECBB4;
+  --uyari:      #F08272;
+  --kotu:       #FF7A66;
+}
+
+:root[data-theme="light"] {
+  --zemin:      #ECF2F2;
+  --yuzey:      #FFFFFF;
+  --yuzey-alt:  #F5FAFA;
+  --murekkep:   #0E2226;
+  --sonuk:      #4E6A6E;
+  --cizgi:      #CFE0E0;
+  --aksan:      #0A6E76;
+  --aksan-acik: #DAF0F1;
+  --aksan-ustu: #FFFFFF;
+  --kor:        #A32E22;
+  --kor-acik:   #FBE6E3;
+  --iyi:        #0A7A6C;
+  --uyari:      #A32E22;
+  --kotu:       #B0281A;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--zemin);
+  color: var(--murekkep);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 { font-family: var(--serif); font-weight: 600; text-wrap: balance; margin: 0; }
+
+.etiket {
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--sonuk);
+  font-weight: 600;
+}
+
+/* ─── Sayfa iskeleti ─────────────────────────────────────── */
+
+.kabuk { max-width: 1240px; margin: 0 auto; padding: 28px 20px 60px; }
+
+.ust {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--cizgi);
+  margin-bottom: 26px;
+}
+
+.marka { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.marka h1 { font-size: 27px; letter-spacing: -0.01em; }
+.marka .alt { font-size: 13.5px; color: var(--sonuk); }
+
+.mod-secim { display: flex; gap: 2px; background: var(--yuzey-alt); padding: 3px; border-radius: var(--r); border: 1px solid var(--cizgi); }
+
+.mod-secim button {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 15px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--sonuk);
+  cursor: pointer;
+}
+.mod-secim button[aria-selected="true"] { background: var(--yuzey); color: var(--aksan); box-shadow: 0 1px 3px rgba(0,0,0,.10); }
+.mod-secim button:focus-visible { outline: 2px solid var(--aksan); outline-offset: 2px; }
+
+/* ─── Sahne ──────────────────────────────────────────────── */
+
+.sahne { display: grid; grid-template-columns: minmax(0,1fr) 330px; gap: 30px; align-items: start; }
+@media (max-width: 940px) { .sahne { grid-template-columns: 1fr; } }
+
+.cihazlar { display: flex; gap: 26px; justify-content: center; flex-wrap: wrap; }
+
+.cihaz-sarma { display: flex; flex-direction: column; align-items: center; gap: 11px; }
+.cihaz-baslik { font-size: 12.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.cihaz-baslik.klasik { color: var(--sonuk); }
+.cihaz-baslik.pusula { color: var(--aksan); }
+
+/* Ekran okuyucuya özel duyuru alanı — görsel olarak gizli, erişilebilir */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* Telefon çerçevesi.
+   Genişlik sabit değil: dar ekranlarda taşmasın diye min() ile kısılır.
+   Yükseklik de görünen alana göre kısalır, yoksa telefonda çerçeve
+   ekrandan uzun olur ve sayfa iki kere kaydırılır. */
+.cihaz {
+  width: min(336px, 100%);
+  height: min(668px, 78vh);
+  border-radius: 34px;
+  background: var(--yuzey);
+  border: 1px solid var(--cizgi);
+  box-shadow: 0 20px 50px -22px rgba(10,30,40,.42), 0 2px 6px rgba(10,30,40,.07);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Ortam ısınma katmanı — zaman bütçesi doldukça belirginleşir */
+.cihaz::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(178deg, rgba(192,138,62,0) 42%, rgba(192,138,62,.20) 100%);
+  opacity: var(--sicaklik);
+  transition: opacity .7s ease;
+  z-index: 4;
+}
+@media (prefers-reduced-motion: reduce) { .cihaz::after { transition: none; } }
+
+.cihaz-ust {
+  padding: 13px 17px 11px;
+  border-bottom: 1px solid var(--cizgi);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--yuzey);
+  z-index: 3;
+}
+
+.logo-nokta { width: 9px; height: 9px; border-radius: 50%; background: var(--aksan); flex: none; }
+.cihaz-ust .ad { font-family: var(--serif); font-size: 16px; font-weight: 600; }
+.cihaz-ust .sag { margin-left: auto; display: flex; align-items: center; gap: 9px; }
+
+/* Zaman halkası — renk körlüğü için sadece renge dayanmaz, yüzde de yazılır */
+.halka { width: 26px; height: 26px; flex: none; }
+.halka-yuzde { font-family: var(--mono); font-size: 11px; color: var(--sonuk); font-variant-numeric: tabular-nums; }
+
+.ekran { flex: 1; overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { .ekran { scroll-behavior: auto; } }
+
+/* ─── Niyet Kapısı ───────────────────────────────────────── */
+
+.kapi { padding: 30px 24px; display: flex; flex-direction: column; height: 100%; }
+.kapi .selam { font-family: var(--serif); font-size: 25px; line-height: 1.28; margin-bottom: 6px; }
+.kapi .aciklama { font-size: 13.5px; color: var(--sonuk); margin-bottom: 22px; }
+
+.niyetler { display: flex; flex-direction: column; gap: 8px; }
+
+.niyet-btn {
+  font: inherit;
+  text-align: left;
+  padding: 13px 15px;
+  border: 1px solid var(--cizgi);
+  border-radius: var(--r);
+  background: var(--yuzey);
+  color: var(--murekkep);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: border-color .15s, background .15s;
+}
+.niyet-btn:hover { border-color: var(--aksan); background: var(--aksan-acik); }
+.niyet-btn:focus-visible { outline: 2px solid var(--aksan); outline-offset: 2px; }
+.niyet-btn[aria-pressed="true"] { border-color: var(--aksan); background: var(--aksan-acik); box-shadow: inset 3px 0 0 var(--aksan); }
+.niyet-btn .isim { font-weight: 600; font-size: 14.5px; }
+.niyet-btn .not { font-size: 12px; color: var(--sonuk); }
+.niyet-btn .isaret { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--aksan); opacity: 0; }
+.niyet-btn[aria-pressed="true"] .isaret { opacity: 1; }
+
+/* "Sadece dolaşmak" ile diğerleri birlikte seçilemez. Kilitli seçenek
+   gizlenmez, soluklaşır: kaybolan seçenek kafa karıştırır, soluk olan
+   kuralı öğretir. */
+.niyet-btn[data-kilitli] { opacity: .42; }
+.niyet-btn[data-kilitli]:hover { border-color: var(--cizgi); background: var(--yuzey); }
+
+.tahmin-rozet {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11.5px; color: var(--aksan);
+  background: var(--aksan-acik); border-radius: 20px;
+  padding: 4px 11px; margin-bottom: 14px; align-self: flex-start;
+}
+
+.butce { margin-top: 22px; }
+.butce-secim { display: flex; gap: 7px; margin-top: 9px; }
+.butce-secim button {
+  font: inherit; font-size: 13px; font-weight: 600;
+  flex: 1; padding: 9px 0;
+  border: 1px solid var(--cizgi); border-radius: 8px;
+  background: var(--yuzey); color: var(--sonuk); cursor: pointer;
+}
+.butce-secim button[aria-pressed="true"] { border-color: var(--aksan); color: var(--aksan); background: var(--aksan-acik); }
+.butce-secim button:focus-visible { outline: 2px solid var(--aksan); outline-offset: 2px; }
+
+.basla {
+  margin-top: auto;
+  font: inherit; font-size: 15px; font-weight: 600;
+  padding: 14px; border: 0; border-radius: var(--r);
+  background: var(--aksan); color: var(--aksan-ustu); cursor: pointer;
+}
+.basla:disabled { opacity: .38; cursor: not-allowed; }
+.basla:focus-visible { outline: 2px solid var(--murekkep); outline-offset: 2px; }
+.gec {
+  margin-top: 9px; font: inherit; font-size: 12.5px;
+  background: none; border: 0; color: var(--sonuk);
+  cursor: pointer; text-decoration: underline; text-underline-offset: 3px;
+}
+
+/* ─── Akış ───────────────────────────────────────────────── */
+
+.akis { padding: 4px 0 30px; }
+
+.gonderi { padding: 15px 17px; border-bottom: 1px solid var(--cizgi); }
+.gonderi-ust { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+.avatar {
+  width: 27px; height: 27px; border-radius: 50%; flex: none;
+  background: var(--aksan-acik); color: var(--aksan);
+  display: grid; place-items: center;
+  font-size: 11.5px; font-weight: 700;
+}
+.gonderi .yazar { font-size: 13px; font-weight: 600; }
+.gonderi .metin { font-size: 14.5px; line-height: 1.5; }
+
+.rozetler { display: flex; gap: 6px; margin-top: 9px; flex-wrap: wrap; align-items: center; }
+
+.rozet {
+  font-size: 11px; font-weight: 600;
+  padding: 2.5px 8px; border-radius: 5px;
+  background: var(--yuzey-alt); color: var(--sonuk);
+  border: 1px solid var(--cizgi);
+}
+.rozet.cb { background: var(--kor-acik); color: var(--uyari); border-color: transparent; }
+
+.neden {
+  font: inherit; font-size: 11.5px; font-weight: 600;
+  background: none; border: 0; color: var(--aksan);
+  cursor: pointer; padding: 2px 4px; margin-left: auto;
+  text-decoration: underline; text-underline-offset: 3px;
+}
+.neden:focus-visible { outline: 2px solid var(--aksan); outline-offset: 2px; }
+
+.aciklama-kutu {
+  margin-top: 10px; padding: 11px 12px;
+  background: var(--yuzey-alt); border-radius: 8px;
+  border-left: 3px solid var(--aksan);
+  font-size: 12px;
+}
+.aciklama-kutu .satir { display: flex; justify-content: space-between; gap: 10px; padding: 2px 0; }
+.aciklama-kutu .satir span:last-child { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.aciklama-kutu .toplam { border-top: 1px solid var(--cizgi); margin-top: 5px; padding-top: 5px; font-weight: 700; color: var(--aksan); }
+
+/* ─── Kapanış ve memnuniyet ──────────────────────────────── */
+
+.orta-ekran { padding: 34px 26px; display: flex; flex-direction: column; height: 100%; justify-content: center; text-align: center; }
+.orta-ekran h2 { font-size: 23px; margin-bottom: 10px; }
+.orta-ekran p { font-size: 14px; color: var(--sonuk); margin: 0 0 22px; }
+
+.ozet-kutu { background: var(--yuzey-alt); border-radius: var(--r); padding: 16px; text-align: left; margin-bottom: 22px; }
+.ozet-satir { display: flex; justify-content: space-between; padding: 5px 0; font-size: 13.5px; }
+.ozet-satir b { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+.duygular { display: flex; gap: 9px; justify-content: center; margin-bottom: 20px; }
+.duygu {
+  font: inherit; font-size: 27px;
+  width: 62px; height: 62px; border-radius: 16px;
+  border: 1px solid var(--cizgi); background: var(--yuzey);
+  cursor: pointer; display: grid; place-items: center;
+}
+.duygu:hover { border-color: var(--aksan); background: var(--aksan-acik); }
+.duygu:focus-visible { outline: 2px solid var(--aksan); outline-offset: 2px; }
+
+.ikili { display: flex; gap: 9px; }
+.ikili button {
+  font: inherit; font-size: 14px; font-weight: 600;
+  flex: 1; padding: 12px; border-radius: var(--r); cursor: pointer;
+}
+.birincil { border: 0; background: var(--aksan); color: var(--aksan-ustu); }
+.ikincil { border: 1px solid var(--cizgi); background: var(--yuzey); color: var(--murekkep); }
+.ikili button:focus-visible { outline: 2px solid var(--murekkep); outline-offset: 2px; }
+
+/* ─── Refah paneli ───────────────────────────────────────── */
+
+.panel { padding: 24px 20px; }
+.panel h2 { font-size: 20px; margin-bottom: 4px; }
+.panel .alt { font-size: 12.5px; color: var(--sonuk); margin-bottom: 20px; }
+
+.olcu { margin-bottom: 17px; }
+.olcu-ust { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; }
+.olcu-ust b { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.cubuk { height: 7px; border-radius: 4px; background: var(--yuzey-alt); overflow: hidden; }
+.cubuk i { display: block; height: 100%; border-radius: 4px; background: var(--aksan); }
+.cubuk i.kor { background: var(--kor); }
+
+/* ─── Mekanizma paneli ───────────────────────────────────── */
+
+.mekanizma { display: flex; flex-direction: column; gap: 14px; position: sticky; top: 22px; }
+@media (max-width: 940px) { .mekanizma { position: static; } }
+
+.kart { background: var(--yuzey); border: 1px solid var(--cizgi); border-radius: var(--r); padding: 16px 17px; }
+.kart h3 { font-size: 15px; margin-bottom: 3px; }
+.kart .kart-alt { font-size: 12px; color: var(--sonuk); margin-bottom: 13px; }
+
+.olcum-satir { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--cizgi); font-size: 13px; }
+.olcum-satir:last-child { border-bottom: 0; }
+.olcum-satir .ad { flex: 1; }
+.olcum-satir .deger { font-family: var(--mono); font-variant-numeric: tabular-nums; font-weight: 600; }
+.olcum-satir .deger.k { color: var(--sonuk); }
+.olcum-satir .deger.p { color: var(--aksan); }
+
+.karsilastirma-basi { display: flex; gap: 10px; font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--sonuk); font-weight: 700; padding-bottom: 6px; border-bottom: 1px solid var(--cizgi); }
+.karsilastirma-basi .ad { flex: 1; }
+.karsilastirma-basi .deger { width: 52px; text-align: right; }
+
+.formul { font-family: var(--mono); font-size: 11.5px; line-height: 1.75; color: var(--sonuk); background: var(--yuzey-alt); padding: 11px 12px; border-radius: 8px; overflow-x: auto; }
+.formul b { color: var(--aksan); }
+
+.not-kutu { font-size: 12.5px; color: var(--sonuk); line-height: 1.6; }
+.not-kutu strong { color: var(--murekkep); }
+
+.tema-btn {
+  font: inherit; font-size: 12.5px; font-weight: 600;
+  padding: 7px 13px; border: 1px solid var(--cizgi);
+  border-radius: 8px; background: var(--yuzey);
+  color: var(--sonuk); cursor: pointer;
+}
+.tema-btn:focus-visible { outline: 2px solid var(--aksan); outline-offset: 2px; }
+
+.gizli { display: none !important; }
+</style>
+
+<div class="kabuk">
+
+  <header class="ust">
+    <div class="marka">
+      <h1>PUSULA</h1>
+      <span class="alt">Niyet odaklı akış prototipi · NSosyal İnovasyon Yarışması 2026</span>
+    </div>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <div class="mod-secim" role="tablist" aria-label="Görüntüleme modu">
+        <button role="tab" id="mod-deneyim" aria-selected="true">Deneyim</button>
+        <button role="tab" id="mod-karsilastirma" aria-selected="false">Karşılaştırma</button>
+      </div>
+      <button class="tema-btn" id="tema-btn">Tema</button>
+    </div>
+  </header>
+
+  <div class="sahne">
+    <div>
+      <div class="cihazlar" id="cihazlar"></div>
+      <!-- Akış değişince ekran okuyucuya haber verir. Akışın tamamını
+           okumak yerine tek cümlelik özet duyurulur. -->
+      <p class="sr-only" id="bildirim" role="status" aria-live="polite"></p>
+    </div>
+
+    <aside class="mekanizma">
+      <div class="kart" id="olcum-kart">
+        <h3>Canlı ölçüm</h3>
+        <p class="kart-alt">Ekrandaki akışın ilk 20 gönderisi üzerinden hesaplanır.</p>
+        <div id="olcumler"></div>
+      </div>
+
+      <div class="kart">
+        <h3>Sıralama formülü</h3>
+        <p class="kart-alt">PUSULA her gönderiye bu skoru verir.</p>
+        <div class="formul">
+          skor = (<br>
+          &nbsp;&nbsp;<b>0.70</b> × niyet_uyumu<br>
+          &nbsp;+ <b>0.15</b> × tazelik<br>
+          &nbsp;+ <b>0.15</b> × etkileşim<br>
+          ) × <b>kalite</b>
+        </div>
+        <p class="not-kutu" style="margin-top:11px;">
+          <strong>Kalite neden çarpan?</strong> Dürüst olmayan içerik, kullanıcının
+          niyetine ne kadar uyarsa uysun öne çıkmamalı. Toplamsal olsaydı yüksek
+          uyumlu clickbait cezayı telafi ederdi.
+        </p>
+      </div>
+
+      <div class="kart">
+        <h3>Klasik algoritma</h3>
+        <p class="kart-alt">Karşılaştırdığımız temel çizgi.</p>
+        <div class="formul">
+          skor =<br>
+          &nbsp;&nbsp;<b>0.70</b> × etkileşim<br>
+          &nbsp;+ <b>0.20</b> × tazelik<br>
+          &nbsp;+ <b>0.10</b> × spam_filtresi
+        </div>
+        <p class="not-kutu" style="margin-top:11px;">
+          Baseline kasten <strong>güçlü</strong> tutuldu: klasik algoritmaya da
+          spam filtresi ve çeşitlilik kısıtı verildi. Zayıf rakip kurmak
+          sonuçları şişirirdi.
+        </p>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   PUSULA — İstemci tarafı sıralama motoru
+   siralama.py'deki mantığın birebir JavaScript karşılığı.
+   ═══════════════════════════════════════════════════════════ */
+
+const HAVUZ = [{"m":"o meşhur yöntem yapanlar dikkat! Sonuçları şok edici.","y":"Bunu Gördünüz mü?","k":"clickbait_kiskirtici","n":[0.09,0.12,0.0,0.0],"cb":1.0,"et":0.88,"tz":0.51,"pi":0.72},{"m":"hava durumu uyarısı: bugün açıklanan verilere göre durum.","y":"Gündem Masası","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.7,"tz":0.31,"pi":0.1},{"m":"sinyal işleme nasıl çalışır? Sıfırdan başlayarak adım adım açıklama.","y":"Ders Defteri","k":"egitim_anlatim","n":[1.0,0.0,0.0,0.28],"cb":0.0,"et":0.44,"tz":0.1,"pi":0.09},{"m":"Bugün ekipçe buluşma. İyi ki varsınız.","y":"Mert","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,1.0],"cb":0.0,"et":0.51,"tz":0.43,"pi":0.17},{"m":"elektrik devreleri nasıl çalışır? Sıfırdan başlayarak adım adım açıklama.","y":"Ders Defteri","k":"egitim_anlatim","n":[1.0,0.0,0.0,0.28],"cb":0.0,"et":0.47,"tz":0.8,"pi":0.09},{"m":"enerji dönüşümü hakkında herkesin atladığı bir nokta var.","y":"Rakamların Dili","k":"gundem_analiz","n":[0.0,0.0,0.65,0.0],"cb":0.0,"et":0.62,"tz":0.78,"pi":0.28},{"m":"sinyal işleme nasıl çalışır? Sıfırdan başlayarak adım adım açıklama.","y":"Formül ve Ötesi","k":"egitim_anlatim","n":[1.0,0.0,0.0,0.28],"cb":0.0,"et":0.41,"tz":0.05,"pi":0.02},{"m":"genç işsizliği hakkında herkesin atladığı bir nokta var.","y":"Analiz Defteri","k":"gundem_analiz","n":[0.0,0.0,0.68,0.0],"cb":0.0,"et":0.56,"tz":0.07,"pi":0.18},{"m":"ulaşım düzenlemesi: bugün açıklanan verilere göre durum.","y":"Gündem Masası","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.63,"tz":0.03,"pi":0.16},{"m":"Uzun zamandır kamp dönüşü yapmamıştık. Güzeldi.","y":"Kerem","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.3],"cb":0.0,"et":0.5,"tz":0.54,"pi":0.1},{"m":"zaman yönetimi konusunda ne düşünüyorsunuz? Gerçekten merak ediyorum.","y":"Onur","k":"soru_tartisma","n":[0.0,0.0,0.0,1.0],"cb":0.0,"et":0.59,"tz":0.0,"pi":0.09},{"m":"kod hatası deyince aklıma gelen tek şey.","y":"laboratuvar kaçkını","k":"mizah","n":[0.25,0.3,0.0,0.0],"cb":0.0,"et":0.67,"tz":0.98,"pi":0.26},{"m":"CV yazma yaparken en çok yapılan 4 hata ve çözümü.","y":"Uygulamalı","k":"nasil_yapilir","n":[0.5,0.0,0.0,0.0],"cb":0.0,"et":0.54,"tz":0.59,"pi":0.0},{"m":"eğitim politikaları hakkında herkesin atladığı bir nokta var.","y":"Analiz Defteri","k":"gundem_analiz","n":[0.0,0.0,0.68,0.0],"cb":0.0,"et":0.49,"tz":0.97,"pi":0.13},{"m":"atölye günü için herkese teşekkürler.","y":"Emre","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.72],"cb":0.0,"et":0.47,"tz":0.76,"pi":0.18},{"m":"SON DAKİKA: burs başvuruları ile ilgili açıklama yapıldı.","y":"Haber Akışı","k":"son_dakika_haber","n":[0.4,0.0,1.0,0.0],"cb":0.2,"et":0.67,"tz":0.55,"pi":0.09},{"m":"hava durumu uyarısı konusunda resmî kurum bilgilendirmesi yayımlandı.","y":"Şehir Bülteni","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.63,"tz":0.57,"pi":0.25},{"m":"girişim kurma için öneriniz var mı? Deneyimi olanlar yazsın.","y":"Barış","k":"soru_tartisma","n":[0.0,0.0,0.0,1.0],"cb":0.0,"et":0.57,"tz":0.85,"pi":0.06},{"m":"hava durumu uyarısı: bugün açıklanan verilere göre durum.","y":"Haber Akışı","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.65,"tz":0.32,"pi":0.13},{"m":"SON DAKİKA: burs başvuruları ile ilgili açıklama yapıldı.","y":"Haber Akışı","k":"son_dakika_haber","n":[0.4,0.0,1.0,0.0],"cb":0.2,"et":0.78,"tz":0.86,"pi":0.17},{"m":"bilinen bir marka hakkında kimsenin söylemediği GERÇEK ortaya çıktı!","y":"Bunu Gördünüz mü?","k":"clickbait_kiskirtici","n":[0.0,0.12,0.3,0.0],"cb":1.0,"et":0.81,"tz":0.13,"pi":0.69},{"m":"Uzun zamandır takım antrenmanı yapmamıştık. Güzeldi.","y":"Mert","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.3],"cb":0.0,"et":0.46,"tz":0.32,"pi":0.15},{"m":"sınav takvimi: bugün açıklanan verilere göre durum.","y":"Şehir Bülteni","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.65,"tz":0.15,"pi":0.2},{"m":"uzay teleskopları hakkında çok konuşulan ama yanlış bilinen bir şey var.","y":"Bilim Kısaca","k":"bilim_teknoloji","n":[0.3,0.0,0.0,0.0],"cb":0.0,"et":0.42,"tz":0.66,"pi":0.04},{"m":"bilinen bir marka hakkında kimsenin söylemediği GERÇEK ortaya çıktı!","y":"Viral Haber","k":"clickbait_kiskirtici","n":[0.0,0.12,0.3,0.0],"cb":1.0,"et":0.84,"tz":0.73,"pi":0.72},{"m":"uzay teleskopları hakkında çok konuşulan ama yanlış bilinen bir şey var.","y":"Bilim Kısaca","k":"bilim_teknoloji","n":[0.3,0.0,0.0,0.0],"cb":0.0,"et":0.41,"tz":0.56,"pi":0.23},{"m":"yapay zekâ güvenliği: neden önemli ve bize ne getirecek?","y":"Bilim Kısaca","k":"bilim_teknoloji","n":[0.55,0.0,0.0,0.28],"cb":0.0,"et":0.4,"tz":0.18,"pi":0.21},{"m":"yeni çıkan ürün hakkında kimsenin söylemediği GERÇEK ortaya çıktı!","y":"Viral Haber","k":"clickbait_kiskirtici","n":[0.0,0.12,0.3,0.0],"cb":1.0,"et":0.78,"tz":0.55,"pi":0.77},{"m":"o meşhur yöntem hakkında kimsenin söylemediği GERÇEK ortaya çıktı!","y":"Bunu Gördünüz mü?","k":"clickbait_kiskirtici","n":[0.09,0.12,0.3,0.0],"cb":1.0,"et":0.97,"tz":0.0,"pi":0.74},{"m":"3 milyon izlenme almış şaşırtan illüzyon videosu.","y":"Akış TV","k":"eglence_video","n":[0.0,1.0,0.0,0.0],"cb":0.0,"et":0.67,"tz":0.06,"pi":0.41},{"m":"Bu videoyu izlemeden geçme. kedi refleksleri","y":"Akış TV","k":"eglence_video","n":[0.0,0.9,0.0,0.0],"cb":0.0,"et":0.83,"tz":0.07,"pi":0.42},{"m":"yapay zekâ güvenliği: neden önemli ve bize ne getirecek?","y":"Laboratuvar Notu","k":"bilim_teknoloji","n":[0.55,0.0,0.0,0.28],"cb":0.0,"et":0.59,"tz":0.12,"pi":0.07},{"m":"Adım adım proje yönetimi. Başlangıç seviyesi için.","y":"Yaparak Öğrenen","k":"nasil_yapilir","n":[0.45,0.0,0.0,0.0],"cb":0.0,"et":0.41,"tz":0.04,"pi":0.0},{"m":"popüler bir tartışma hakkında kimsenin söylemediği GERÇEK ortaya çıktı!","y":"Trend Merkez","k":"clickbait_kiskirtici","n":[0.0,0.12,0.3,0.0],"cb":1.0,"et":0.98,"tz":0.35,"pi":0.74},{"m":"Herkes bilinen bir marka konusunda yanılıyor. İşte asıl sebep.","y":"Gündem Şok","k":"clickbait_kiskirtici","n":[0.25,0.25,0.25,0.25],"cb":0.9,"et":0.77,"tz":0.95,"pi":0.78},{"m":"tarım üretimi meselesini rakamlarla inceledim. Detaylı analiz.","y":"Veriyle Bakış","k":"gundem_analiz","n":[0.53,0.0,0.75,0.0],"cb":0.0,"et":0.55,"tz":0.85,"pi":0.14},{"m":"Uzun zamandır kamp dönüşü yapmamıştık. Güzeldi.","y":"Selin","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.3],"cb":0.0,"et":0.51,"tz":0.68,"pi":0.15},{"m":"yapay zekâ güvenliği hakkında çok konuşulan ama yanlış bilinen bir şey var.","y":"Teknoloji Gündemi","k":"bilim_teknoloji","n":[0.3,0.0,0.0,0.0],"cb":0.0,"et":0.54,"tz":0.27,"pi":0.17},{"m":"yeni çıkan ürün tartışması büyüyor. Taraflar birbirine girdi.","y":"Gündem Şok","k":"clickbait_kiskirtici","n":[0.0,0.0,0.25,0.0],"cb":0.9,"et":0.83,"tz":0.3,"pi":0.7},{"m":"yazıcı kuyruğu ile ilgili bu kadar komik bir şey görmemiştim.","y":"vize mağduru","k":"mizah","n":[0.0,0.75,0.0,0.0],"cb":0.0,"et":0.65,"tz":0.22,"pi":0.18},{"m":"Adım adım CNC tezgâh ayarı. Başlangıç seviyesi için.","y":"Prototip Defteri","k":"nasil_yapilir","n":[0.45,0.0,0.0,0.0],"cb":0.0,"et":0.33,"tz":0.01,"pi":0.11},{"m":"Adım adım proje yönetimi. Başlangıç seviyesi için.","y":"Atölye Günlüğü","k":"nasil_yapilir","n":[0.45,0.0,0.0,0.0],"cb":0.0,"et":0.45,"tz":0.55,"pi":0.17},{"m":"yapay zekâ güvenliği: neden önemli ve bize ne getirecek?","y":"Araştırma Özeti","k":"bilim_teknoloji","n":[0.55,0.0,0.0,0.28],"cb":0.0,"et":0.49,"tz":0.56,"pi":0.15},{"m":"kod hatası deyince aklıma gelen tek şey.","y":"kampüs hâlleri","k":"mizah","n":[0.25,0.3,0.0,0.0],"cb":0.0,"et":0.65,"tz":0.77,"pi":0.32},{"m":"takım çalışması konusunda ne düşünüyorsunuz? Gerçekten merak ediyorum.","y":"Yiğit","k":"soru_tartisma","n":[0.0,0.0,0.0,1.0],"cb":0.0,"et":0.73,"tz":0.88,"pi":0.07},{"m":"Kimse konuşmuyor ama kampüs yemekhanesi gerçekten absürt.","y":"kampüs hâlleri","k":"mizah","n":[0.0,0.42,0.0,0.0],"cb":0.0,"et":0.64,"tz":0.97,"pi":0.3},{"m":"SON DAKİKA: yeni yönetmelik ile ilgili açıklama yapıldı.","y":"Haber Akışı","k":"son_dakika_haber","n":[0.4,0.0,1.0,0.0],"cb":0.2,"et":0.66,"tz":0.45,"pi":0.13},{"m":"CAD modelleme için kullandığım yöntem. Denedim, çalışıyor.","y":"Tezgâh Başı","k":"nasil_yapilir","n":[0.35,0.0,0.0,0.0],"cb":0.0,"et":0.35,"tz":0.46,"pi":0.07},{"m":"Bugün proje teslimi. İyi ki varsınız.","y":"Burak","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.47],"cb":0.0,"et":0.37,"tz":0.38,"pi":0.06},{"m":"Bugün atölye günü. İyi ki varsınız.","y":"Burak","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.47],"cb":0.0,"et":0.44,"tz":0.64,"pi":0.02},{"m":"sabah dersleri deyince aklıma gelen tek şey.","y":"kampüs hâlleri","k":"mizah","n":[0.0,0.3,0.0,0.0],"cb":0.0,"et":0.81,"tz":0.89,"pi":0.34},{"m":"yapay sinir ağları nasıl çalışır? Sıfırdan başlayarak adım adım açıklama.","y":"Kürsü","k":"egitim_anlatim","n":[1.0,0.0,0.0,0.28],"cb":0.0,"et":0.29,"tz":0.94,"pi":0.09},{"m":"Adım adım kod optimizasyonu. Başlangıç seviyesi için.","y":"Atölye Günlüğü","k":"nasil_yapilir","n":[0.45,0.0,0.0,0.0],"cb":0.0,"et":0.34,"tz":0.45,"pi":0.1},{"m":"hava durumu uyarısı: bugün açıklanan verilere göre durum.","y":"Kampüs Duyuru","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.72,"tz":0.5,"pi":0.1},{"m":"ilk iş deneyimi için öneriniz var mı? Deneyimi olanlar yazsın.","y":"Ceren","k":"soru_tartisma","n":[0.0,0.0,0.0,1.0],"cb":0.0,"et":0.66,"tz":0.19,"pi":0.18},{"m":"Uzun zamandır kamp dönüşü yapmamıştık. Güzeldi.","y":"Ayşe","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.3],"cb":0.0,"et":0.34,"tz":0.79,"pi":0.14},{"m":"Bugün mezuniyet. İyi ki varsınız.","y":"Burak","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.47],"cb":0.0,"et":0.36,"tz":0.81,"pi":0.14},{"m":"istatistiksel çıkarım konusunu 5 dakikada anlatıyorum. Baştan sona örnekli.","y":"Formül ve Ötesi","k":"egitim_anlatim","n":[1.0,0.0,0.0,0.0],"cb":0.0,"et":0.43,"tz":0.11,"pi":0.06},{"m":"sokak müzisyeni — son 10 saniye için kal.","y":"Akış TV","k":"eglence_video","n":[0.0,0.4,0.0,0.0],"cb":0.0,"et":0.89,"tz":0.06,"pi":0.48},{"m":"kamp dönüşü için herkese teşekkürler.","y":"Emre","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.72],"cb":0.0,"et":0.41,"tz":0.6,"pi":0.13},{"m":"ulaşım düzenlemesi konusunda resmî kurum bilgilendirmesi yayımlandı.","y":"Gündem Masası","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.64,"tz":0.61,"pi":0.26},{"m":"3B yazıcı kalibrasyonu yaparken en çok yapılan 4 hata ve çözümü.","y":"Yaparak Öğrenen","k":"nasil_yapilir","n":[0.5,0.0,0.0,0.0],"cb":0.0,"et":0.5,"tz":0.79,"pi":0.05},{"m":"bilinen bir marka tartışması büyüyor. Taraflar birbirine girdi.","y":"Viral Haber","k":"clickbait_kiskirtici","n":[0.0,0.0,0.25,0.0],"cb":0.9,"et":0.9,"tz":0.84,"pi":0.75},{"m":"yapay zekâ güvenliği: neden önemli ve bize ne getirecek?","y":"Araştırma Özeti","k":"bilim_teknoloji","n":[0.55,0.0,0.0,0.28],"cb":0.0,"et":0.38,"tz":0.83,"pi":0.07},{"m":"3B yazıcı kalibrasyonu yaparken en çok yapılan 4 hata ve çözümü.","y":"Tezgâh Başı","k":"nasil_yapilir","n":[0.5,0.0,0.0,0.0],"cb":0.0,"et":0.54,"tz":0.1,"pi":0.21},{"m":"teknoloji yatırımları hakkında herkesin atladığı bir nokta var.","y":"Veriyle Bakış","k":"gundem_analiz","n":[0.0,0.0,0.65,0.0],"cb":0.0,"et":0.48,"tz":0.41,"pi":0.15},{"m":"mezuniyet için herkese teşekkürler.","y":"Zeynep","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.72],"cb":0.0,"et":0.36,"tz":0.28,"pi":0.03},{"m":"teknoloji yatırımları: kısa vadeli ve uzun vadeli sonuçları ne olur?","y":"Veriyle Bakış","k":"gundem_analiz","n":[0.0,0.0,1.0,0.28],"cb":0.0,"et":0.65,"tz":0.54,"pi":0.15},{"m":"ulaşım düzenlemesi: bugün açıklanan verilere göre durum.","y":"Haber Akışı","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.57,"tz":0.74,"pi":0.16},{"m":"CV yazma yaparken en çok yapılan 4 hata ve çözümü.","y":"Atölye Günlüğü","k":"nasil_yapilir","n":[0.5,0.0,0.0,0.0],"cb":0.0,"et":0.42,"tz":0.78,"pi":0.13},{"m":"CRISPR hakkında çok konuşulan ama yanlış bilinen bir şey var.","y":"Laboratuvar Notu","k":"bilim_teknoloji","n":[0.3,0.0,0.3,0.0],"cb":0.2,"et":0.58,"tz":0.72,"pi":0.18},{"m":"kontrol sistemleri nasıl çalışır? Sıfırdan başlayarak adım adım açıklama.","y":"Mühendislik Notları","k":"egitim_anlatim","n":[1.0,0.0,0.0,0.28],"cb":0.0,"et":0.32,"tz":0.75,"pi":0.12},{"m":"SON DAKİKA: sınav takvimi ile ilgili açıklama yapıldı.","y":"Şehir Bülteni","k":"son_dakika_haber","n":[0.4,0.0,1.0,0.0],"cb":0.2,"et":0.65,"tz":0.91,"pi":0.17},{"m":"CAD modelleme yaparken en çok yapılan 4 hata ve çözümü.","y":"Prototip Defteri","k":"nasil_yapilir","n":[0.5,0.0,0.0,0.0],"cb":0.0,"et":0.43,"tz":0.82,"pi":0.07},{"m":"zaman yönetimi konusunda ne düşünüyorsunuz? Gerçekten merak ediyorum.","y":"Onur","k":"soru_tartisma","n":[0.0,0.0,0.0,1.0],"cb":0.0,"et":0.55,"tz":0.34,"pi":0.25},{"m":"Sizce yurt dışı yüksek lisans nasıl çözülür?","y":"Yiğit","k":"soru_tartisma","n":[0.35,0.0,0.0,1.0],"cb":0.0,"et":0.67,"tz":0.41,"pi":0.18},{"m":"Bugün sınav sonucu yaşadım, hâlâ inanamıyorum.","y":"son sıra","k":"mizah","n":[0.0,0.6,0.0,0.0],"cb":0.0,"et":0.71,"tz":0.48,"pi":0.28},{"m":"takım çalışması konusunda ne düşünüyorsunuz? Gerçekten merak ediyorum.","y":"Deniz","k":"soru_tartisma","n":[0.0,0.0,0.0,1.0],"cb":0.0,"et":0.61,"tz":1.0,"pi":0.22},{"m":"eğitim politikaları hakkında herkesin atladığı bir nokta var.","y":"Uzun Yazı","k":"gundem_analiz","n":[0.0,0.0,0.68,0.0],"cb":0.0,"et":0.54,"tz":0.54,"pi":0.25},{"m":"Sizce takım çalışması nasıl çözülür?","y":"Barış","k":"soru_tartisma","n":[0.35,0.0,0.0,1.0],"cb":0.0,"et":0.53,"tz":0.49,"pi":0.18},{"m":"enerji dönüşümü: kısa vadeli ve uzun vadeli sonuçları ne olur?","y":"Rakamların Dili","k":"gundem_analiz","n":[0.0,0.0,1.0,0.28],"cb":0.0,"et":0.47,"tz":0.17,"pi":0.23},{"m":"zaman yönetimi için öneriniz var mı? Deneyimi olanlar yazsın.","y":"Naz","k":"soru_tartisma","n":[0.0,0.0,0.0,1.0],"cb":0.0,"et":0.67,"tz":0.33,"pi":0.25},{"m":"burs başvuruları konusunda resmî kurum bilgilendirmesi yayımlandı.","y":"Şehir Bülteni","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.62,"tz":0.74,"pi":0.23},{"m":"eğitim politikaları hakkında herkesin atladığı bir nokta var.","y":"Uzun Yazı","k":"gundem_analiz","n":[0.0,0.0,0.68,0.0],"cb":0.0,"et":0.51,"tz":0.14,"pi":0.2},{"m":"Fourier dönüşümü nasıl çalışır? Sıfırdan başlayarak adım adım açıklama.","y":"Ders Defteri","k":"egitim_anlatim","n":[1.0,0.0,0.0,0.28],"cb":0.0,"et":0.25,"tz":0.77,"pi":0.14},{"m":"hava durumu uyarısı konusunda resmî kurum bilgilendirmesi yayımlandı.","y":"Şehir Bülteni","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.66,"tz":0.86,"pi":0.2},{"m":"kamp dönüşü için herkese teşekkürler.","y":"Burak","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.72],"cb":0.0,"et":0.41,"tz":0.48,"pi":0.03},{"m":"Uzun zamandır proje teslimi yapmamıştık. Güzeldi.","y":"Selin","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.3],"cb":0.0,"et":0.45,"tz":0.84,"pi":0.17},{"m":"katı hal bataryaları hakkında çok konuşulan ama yanlış bilinen bir şey var.","y":"Araştırma Özeti","k":"bilim_teknoloji","n":[0.3,0.0,0.0,0.0],"cb":0.0,"et":0.39,"tz":0.54,"pi":0.23},{"m":"kod hatası deyince aklıma gelen tek şey.","y":"geç kalan öğrenci","k":"mizah","n":[0.25,0.3,0.0,0.0],"cb":0.0,"et":0.68,"tz":0.96,"pi":0.32},{"m":"SON DAKİKA: ekonomi verileri ile ilgili açıklama yapıldı.","y":"Şehir Bülteni","k":"son_dakika_haber","n":[0.4,0.0,1.0,0.0],"cb":0.2,"et":0.56,"tz":0.02,"pi":0.12},{"m":"otobüs beklemek ile ilgili bu kadar komik bir şey görmemiştim.","y":"kampüs hâlleri","k":"mizah","n":[0.0,0.75,0.0,0.0],"cb":0.0,"et":0.83,"tz":0.04,"pi":0.41},{"m":"3 milyon izlenme almış yemek tarifi hızlı çekim videosu.","y":"Viral Kutu","k":"eglence_video","n":[0.0,0.45,0.0,0.0],"cb":0.0,"et":0.72,"tz":0.49,"pi":0.27},{"m":"3 milyon izlenme almış dans akımı videosu.","y":"Akış TV","k":"eglence_video","n":[0.0,0.75,0.0,0.0],"cb":0.0,"et":0.73,"tz":0.29,"pi":0.32},{"m":"Uzun zamandır atölye günü yapmamıştık. Güzeldi.","y":"Zeynep","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.3],"cb":0.0,"et":0.54,"tz":0.53,"pi":0.03},{"m":"3 milyon izlenme almış yemek tarifi hızlı çekim videosu.","y":"Akış TV","k":"eglence_video","n":[0.0,0.45,0.0,0.0],"cb":0.0,"et":0.67,"tz":0.71,"pi":0.48},{"m":"Sizce yurt dışı yüksek lisans nasıl çözülür?","y":"Barış","k":"soru_tartisma","n":[0.35,0.0,0.0,1.0],"cb":0.0,"et":0.57,"tz":0.07,"pi":0.24},{"m":"veri yapıları konusunu 5 dakikada anlatıyorum. Baştan sona örnekli.","y":"Formül ve Ötesi","k":"egitim_anlatim","n":[1.0,0.0,0.0,0.0],"cb":0.0,"et":0.35,"tz":0.35,"pi":0.16},{"m":"Bu videoyu izlemeden geçme. dans akımı","y":"Viral Kutu","k":"eglence_video","n":[0.0,0.9,0.0,0.0],"cb":0.0,"et":0.86,"tz":0.32,"pi":0.46},{"m":"Uzun zamandır mezuniyet yapmamıştık. Güzeldi.","y":"Selin","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.3],"cb":0.0,"et":0.52,"tz":0.55,"pi":0.01},{"m":"katı hal bataryaları: neden önemli ve bize ne getirecek?","y":"Teknoloji Gündemi","k":"bilim_teknoloji","n":[0.55,0.0,0.0,0.28],"cb":0.0,"et":0.45,"tz":0.26,"pi":0.24},{"m":"bilinen bir marka hakkında kimsenin söylemediği GERÇEK ortaya çıktı!","y":"Gündem Şok","k":"clickbait_kiskirtici","n":[0.0,0.12,0.3,0.0],"cb":1.0,"et":0.83,"tz":0.76,"pi":0.6},{"m":"sinir ağı mimarileri hakkında çok konuşulan ama yanlış bilinen bir şey var.","y":"Teknoloji Gündemi","k":"bilim_teknoloji","n":[0.3,0.0,0.0,0.0],"cb":0.0,"et":0.58,"tz":0.13,"pi":0.16},{"m":"takım antrenmanı için herkese teşekkürler.","y":"Elif","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.72],"cb":0.0,"et":0.43,"tz":0.12,"pi":0.19},{"m":"eğitim politikaları hakkında herkesin atladığı bir nokta var.","y":"Veriyle Bakış","k":"gundem_analiz","n":[0.0,0.0,0.68,0.0],"cb":0.0,"et":0.64,"tz":0.85,"pi":0.09},{"m":"bilinen bir marka yapanlar dikkat! Sonuçları şok edici.","y":"Bunu Gördünüz mü?","k":"clickbait_kiskirtici","n":[0.0,0.12,0.0,0.0],"cb":1.0,"et":0.89,"tz":0.2,"pi":0.61},{"m":"Bugün grup ödevi yaşadım, hâlâ inanamıyorum.","y":"kampüs hâlleri","k":"mizah","n":[0.0,0.6,0.0,0.0],"cb":0.0,"et":0.76,"tz":0.36,"pi":0.22},{"m":"Herkes yeni çıkan ürün konusunda yanılıyor. İşte asıl sebep.","y":"Bunu Gördünüz mü?","k":"clickbait_kiskirtici","n":[0.25,0.25,0.25,0.25],"cb":0.9,"et":0.79,"tz":0.37,"pi":0.79},{"m":"Kimse konuşmuyor ama sabah dersleri gerçekten absürt.","y":"laboratuvar kaçkını","k":"mizah","n":[0.0,0.42,0.0,0.0],"cb":0.0,"et":0.8,"tz":0.12,"pi":0.39},{"m":"sokak müzisyeni — son 10 saniye için kal.","y":"İzle Geç","k":"eglence_video","n":[0.0,0.4,0.0,0.0],"cb":0.0,"et":0.87,"tz":0.86,"pi":0.49},{"m":"Bugün grup ödevi yaşadım, hâlâ inanamıyorum.","y":"kampüs hâlleri","k":"mizah","n":[0.0,0.6,0.0,0.0],"cb":0.0,"et":0.83,"tz":0.33,"pi":0.35},{"m":"bu alışkanlık hakkında kimsenin söylemediği GERÇEK ortaya çıktı!","y":"Bunu Gördünüz mü?","k":"clickbait_kiskirtici","n":[0.0,0.12,0.3,0.0],"cb":1.0,"et":0.9,"tz":0.98,"pi":0.69},{"m":"atölye günü için herkese teşekkürler.","y":"Elif","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.72],"cb":0.0,"et":0.38,"tz":0.67,"pi":0.05},{"m":"yazıcı kuyruğu deyince aklıma gelen tek şey.","y":"kampüs hâlleri","k":"mizah","n":[0.0,0.3,0.0,0.0],"cb":0.0,"et":0.65,"tz":0.48,"pi":0.24},{"m":"olasılık teorisi konusunu 5 dakikada anlatıyorum. Baştan sona örnekli.","y":"Ders Defteri","k":"egitim_anlatim","n":[1.0,0.0,0.0,0.0],"cb":0.0,"et":0.33,"tz":0.2,"pi":0.1},{"m":"Sizce bölüm seçimi nasıl çözülür?","y":"Yiğit","k":"soru_tartisma","n":[0.35,0.0,0.0,1.0],"cb":0.0,"et":0.57,"tz":0.04,"pi":0.25},{"m":"o meşhur yöntem hakkında kimsenin söylemediği GERÇEK ortaya çıktı!","y":"Gündem Şok","k":"clickbait_kiskirtici","n":[0.09,0.12,0.3,0.0],"cb":1.0,"et":0.84,"tz":0.12,"pi":0.63},{"m":"Herkes o meşhur yöntem konusunda yanılıyor. İşte asıl sebep.","y":"Viral Haber","k":"clickbait_kiskirtici","n":[0.09,0.0,0.0,0.0],"cb":0.9,"et":0.83,"tz":0.03,"pi":0.74},{"m":"Bugün kod hatası yaşadım, hâlâ inanamıyorum.","y":"geç kalan öğrenci","k":"mizah","n":[0.25,0.6,0.0,0.0],"cb":0.0,"et":0.61,"tz":0.64,"pi":0.25},{"m":"teknoloji yatırımları hakkında herkesin atladığı bir nokta var.","y":"Veriyle Bakış","k":"gundem_analiz","n":[0.0,0.0,0.65,0.0],"cb":0.0,"et":0.61,"tz":0.67,"pi":0.18},{"m":"bölüm seçimi için öneriniz var mı? Deneyimi olanlar yazsın.","y":"Naz","k":"soru_tartisma","n":[0.0,0.0,0.0,1.0],"cb":0.0,"et":0.55,"tz":0.49,"pi":0.07},{"m":"bölüm seçimi konusunda ne düşünüyorsunuz? Gerçekten merak ediyorum.","y":"Barış","k":"soru_tartisma","n":[0.0,0.0,0.0,1.0],"cb":0.0,"et":0.59,"tz":0.95,"pi":0.22},{"m":"Üniversitede kimsenin anlatmadığı şekilde olasılık teorisi. Uzun anlatım.","y":"Ders Defteri","k":"egitim_anlatim","n":[0.25,0.25,0.25,0.25],"cb":0.0,"et":0.26,"tz":0.14,"pi":0.07},{"m":"doğum günü için herkese teşekkürler.","y":"Elif","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.72],"cb":0.0,"et":0.34,"tz":0.62,"pi":0.14},{"m":"Sizce bölüm seçimi nasıl çözülür?","y":"Onur","k":"soru_tartisma","n":[0.35,0.0,0.0,1.0],"cb":0.0,"et":0.62,"tz":0.58,"pi":0.28},{"m":"Bugün kamp dönüşü. İyi ki varsınız.","y":"Burak","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.47],"cb":0.0,"et":0.35,"tz":0.23,"pi":0.18},{"m":"kamp dönüşü için herkese teşekkürler.","y":"Emre","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.72],"cb":0.0,"et":0.44,"tz":0.35,"pi":0.0},{"m":"yeni yönetmelik konusunda resmî kurum bilgilendirmesi yayımlandı.","y":"Kampüs Duyuru","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.79,"tz":0.32,"pi":0.24},{"m":"girişim kurma için öneriniz var mı? Deneyimi olanlar yazsın.","y":"Onur","k":"soru_tartisma","n":[0.0,0.0,0.0,1.0],"cb":0.0,"et":0.72,"tz":0.39,"pi":0.21},{"m":"kod hatası deyince aklıma gelen tek şey.","y":"geç kalan öğrenci","k":"mizah","n":[0.25,0.3,0.0,0.0],"cb":0.0,"et":0.69,"tz":0.29,"pi":0.29},{"m":"SON DAKİKA: ekonomi verileri ile ilgili açıklama yapıldı.","y":"Şehir Bülteni","k":"son_dakika_haber","n":[0.4,0.0,1.0,0.0],"cb":0.2,"et":0.71,"tz":0.28,"pi":0.27},{"m":"Bu videoyu izlemeden geçme. dans akımı","y":"Viral Kutu","k":"eglence_video","n":[0.0,0.9,0.0,0.0],"cb":0.0,"et":0.75,"tz":0.87,"pi":0.35},{"m":"ekonomi verileri: bugün açıklanan verilere göre durum.","y":"Haber Akışı","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.77,"tz":0.04,"pi":0.29},{"m":"enerji dönüşümü meselesini rakamlarla inceledim. Detaylı analiz.","y":"Analiz Defteri","k":"gundem_analiz","n":[0.53,0.0,0.75,0.0],"cb":0.0,"et":0.54,"tz":0.22,"pi":0.24},{"m":"genç işsizliği hakkında herkesin atladığı bir nokta var.","y":"Rakamların Dili","k":"gundem_analiz","n":[0.0,0.0,0.68,0.0],"cb":0.0,"et":0.58,"tz":0.38,"pi":0.1},{"m":"popüler bir tartışma yapanlar dikkat! Sonuçları şok edici.","y":"Viral Haber","k":"clickbait_kiskirtici","n":[0.0,0.12,0.0,0.0],"cb":1.0,"et":0.99,"tz":0.07,"pi":0.71},{"m":"veri temizleme yaparken en çok yapılan 4 hata ve çözümü.","y":"Yaparak Öğrenen","k":"nasil_yapilir","n":[0.5,0.0,0.0,0.0],"cb":0.0,"et":0.32,"tz":0.4,"pi":0.05},{"m":"eğitim politikaları meselesini rakamlarla inceledim. Detaylı analiz.","y":"Rakamların Dili","k":"gundem_analiz","n":[0.53,0.0,0.78,0.0],"cb":0.0,"et":0.58,"tz":0.8,"pi":0.27},{"m":"3B yazıcı kalibrasyonu için kullandığım yöntem. Denedim, çalışıyor.","y":"Yaparak Öğrenen","k":"nasil_yapilir","n":[0.35,0.0,0.0,0.0],"cb":0.0,"et":0.45,"tz":0.9,"pi":0.02},{"m":"yeni yönetmelik: bugün açıklanan verilere göre durum.","y":"Şehir Bülteni","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.63,"tz":0.47,"pi":0.24},{"m":"burs başvuruları: bugün açıklanan verilere göre durum.","y":"Şehir Bülteni","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.56,"tz":0.38,"pi":0.26},{"m":"SON DAKİKA: ekonomi verileri ile ilgili açıklama yapıldı.","y":"Haber Akışı","k":"son_dakika_haber","n":[0.4,0.0,1.0,0.0],"cb":0.2,"et":0.62,"tz":0.35,"pi":0.23},{"m":"ekonomi verileri: bugün açıklanan verilere göre durum.","y":"Haber Akışı","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.73,"tz":0.1,"pi":0.24},{"m":"3 milyon izlenme almış sokak müzisyeni videosu.","y":"Günün Videosu","k":"eglence_video","n":[0.0,0.45,0.0,0.0],"cb":0.0,"et":0.88,"tz":0.2,"pi":0.3},{"m":"Herkes bu alışkanlık konusunda yanılıyor. İşte asıl sebep.","y":"Bunu Gördünüz mü?","k":"clickbait_kiskirtici","n":[0.25,0.25,0.25,0.25],"cb":0.9,"et":0.92,"tz":0.68,"pi":0.78},{"m":"Herkes yeni çıkan ürün konusunda yanılıyor. İşte asıl sebep.","y":"Gündem Şok","k":"clickbait_kiskirtici","n":[0.25,0.25,0.25,0.25],"cb":0.9,"et":0.82,"tz":0.01,"pi":0.65},{"m":"Sizce bölüm seçimi nasıl çözülür?","y":"Barış","k":"soru_tartisma","n":[0.35,0.0,0.0,1.0],"cb":0.0,"et":0.7,"tz":0.23,"pi":0.04},{"m":"olasılık teorisi nasıl çalışır? Sıfırdan başlayarak adım adım açıklama.","y":"Kürsü","k":"egitim_anlatim","n":[1.0,0.0,0.0,0.28],"cb":0.0,"et":0.41,"tz":0.31,"pi":0.04},{"m":"bu alışkanlık hakkında kimsenin söylemediği GERÇEK ortaya çıktı!","y":"Bunu Gördünüz mü?","k":"clickbait_kiskirtici","n":[0.0,0.12,0.3,0.0],"cb":1.0,"et":0.93,"tz":0.47,"pi":0.69},{"m":"PCB tasarımı için kullandığım yöntem. Denedim, çalışıyor.","y":"Atölye Günlüğü","k":"nasil_yapilir","n":[0.35,0.0,0.0,0.0],"cb":0.0,"et":0.46,"tz":0.18,"pi":0.14},{"m":"ilk iş deneyimi için öneriniz var mı? Deneyimi olanlar yazsın.","y":"Naz","k":"soru_tartisma","n":[0.0,0.0,0.0,1.0],"cb":0.0,"et":0.72,"tz":0.73,"pi":0.1},{"m":"teknoloji yatırımları: kısa vadeli ve uzun vadeli sonuçları ne olur?","y":"Veriyle Bakış","k":"gundem_analiz","n":[0.0,0.0,1.0,0.28],"cb":0.0,"et":0.65,"tz":0.69,"pi":0.1},{"m":"CV yazma konusunda 2 yılda öğrendiklerimi tek yazıda topladım.","y":"Prototip Defteri","k":"nasil_yapilir","n":[0.4,0.0,0.0,0.0],"cb":0.0,"et":0.39,"tz":0.32,"pi":0.0},{"m":"mezuniyet için herkese teşekkürler.","y":"Selin","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.72],"cb":0.0,"et":0.51,"tz":0.85,"pi":0.0},{"m":"yeni çıkan ürün tartışması büyüyor. Taraflar birbirine girdi.","y":"Trend Merkez","k":"clickbait_kiskirtici","n":[0.0,0.0,0.25,0.0],"cb":0.9,"et":0.98,"tz":0.67,"pi":0.75},{"m":"genç işsizliği hakkında herkesin atladığı bir nokta var.","y":"Veriyle Bakış","k":"gundem_analiz","n":[0.0,0.0,0.68,0.0],"cb":0.0,"et":0.52,"tz":0.1,"pi":0.13},{"m":"sinir ağı mimarileri hakkında çok konuşulan ama yanlış bilinen bir şey var.","y":"Araştırma Özeti","k":"bilim_teknoloji","n":[0.3,0.0,0.0,0.0],"cb":0.0,"et":0.49,"tz":0.47,"pi":0.08},{"m":"sinir ağı mimarileri: neden önemli ve bize ne getirecek?","y":"Laboratuvar Notu","k":"bilim_teknoloji","n":[0.55,0.0,0.0,0.28],"cb":0.0,"et":0.51,"tz":0.13,"pi":0.11},{"m":"Bu videoyu izlemeden geçme. spor hareketi","y":"İzle Geç","k":"eglence_video","n":[0.0,0.6,0.0,0.0],"cb":0.0,"et":0.8,"tz":0.77,"pi":0.27},{"m":"enerji dönüşümü: kısa vadeli ve uzun vadeli sonuçları ne olur?","y":"Veriyle Bakış","k":"gundem_analiz","n":[0.0,0.0,1.0,0.28],"cb":0.0,"et":0.63,"tz":0.28,"pi":0.09},{"m":"proje yönetimi için kullandığım yöntem. Denedim, çalışıyor.","y":"Yaparak Öğrenen","k":"nasil_yapilir","n":[0.35,0.0,0.0,0.0],"cb":0.0,"et":0.49,"tz":0.5,"pi":0.08},{"m":"Adım adım kod optimizasyonu. Başlangıç seviyesi için.","y":"Uygulamalı","k":"nasil_yapilir","n":[0.45,0.0,0.0,0.0],"cb":0.0,"et":0.54,"tz":0.86,"pi":0.13},{"m":"Kimse konuşmuyor ama otobüs beklemek gerçekten absürt.","y":"laboratuvar kaçkını","k":"mizah","n":[0.0,0.42,0.0,0.0],"cb":0.0,"et":0.76,"tz":0.46,"pi":0.29},{"m":"3 milyon izlenme almış yemek tarifi hızlı çekim videosu.","y":"Viral Kutu","k":"eglence_video","n":[0.0,0.45,0.0,0.0],"cb":0.0,"et":0.67,"tz":0.34,"pi":0.39},{"m":"final haftası deyince aklıma gelen tek şey.","y":"laboratuvar kaçkını","k":"mizah","n":[0.0,0.3,0.0,0.0],"cb":0.0,"et":0.84,"tz":0.69,"pi":0.29},{"m":"yeni yönetmelik konusunda resmî kurum bilgilendirmesi yayımlandı.","y":"Kampüs Duyuru","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.62,"tz":0.93,"pi":0.28},{"m":"ilk iş deneyimi için öneriniz var mı? Deneyimi olanlar yazsın.","y":"Deniz","k":"soru_tartisma","n":[0.0,0.0,0.0,1.0],"cb":0.0,"et":0.67,"tz":0.89,"pi":0.07},{"m":"o meşhur yöntem tartışması büyüyor. Taraflar birbirine girdi.","y":"Trend Merkez","k":"clickbait_kiskirtici","n":[0.09,0.0,0.25,0.0],"cb":0.9,"et":0.88,"tz":0.8,"pi":0.77},{"m":"ekonomi verileri: bugün açıklanan verilere göre durum.","y":"Haber Akışı","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.67,"tz":0.6,"pi":0.07},{"m":"eğitim politikaları: kısa vadeli ve uzun vadeli sonuçları ne olur?","y":"Uzun Yazı","k":"gundem_analiz","n":[0.0,0.0,1.0,0.28],"cb":0.0,"et":0.58,"tz":0.37,"pi":0.14},{"m":"o meşhur yöntem hakkında kimsenin söylemediği GERÇEK ortaya çıktı!","y":"Viral Haber","k":"clickbait_kiskirtici","n":[0.09,0.12,0.3,0.0],"cb":1.0,"et":0.9,"tz":0.84,"pi":0.61},{"m":"genç işsizliği: kısa vadeli ve uzun vadeli sonuçları ne olur?","y":"Analiz Defteri","k":"gundem_analiz","n":[0.0,0.0,1.0,0.28],"cb":0.0,"et":0.61,"tz":0.38,"pi":0.09},{"m":"katı hal bataryaları: neden önemli ve bize ne getirecek?","y":"Araştırma Özeti","k":"bilim_teknoloji","n":[0.55,0.0,0.0,0.28],"cb":0.0,"et":0.39,"tz":0.76,"pi":0.14},{"m":"Bugün ekipçe buluşma. İyi ki varsınız.","y":"Ayşe","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,1.0],"cb":0.0,"et":0.34,"tz":0.91,"pi":0.17},{"m":"ulaşım düzenlemesi: bugün açıklanan verilere göre durum.","y":"Haber Akışı","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.57,"tz":0.18,"pi":0.26},{"m":"Bugün kampüs yemekhanesi yaşadım, hâlâ inanamıyorum.","y":"kampüs hâlleri","k":"mizah","n":[0.0,0.6,0.0,0.0],"cb":0.0,"et":0.72,"tz":0.54,"pi":0.27},{"m":"akışkanlar mekaniği hakkında bilmen gereken 7 temel kavram.","y":"Mühendislik Notları","k":"egitim_anlatim","n":[0.6,0.0,0.0,0.0],"cb":0.0,"et":0.39,"tz":0.24,"pi":0.17},{"m":"Kimse konuşmuyor ama sınav sonucu gerçekten absürt.","y":"son sıra","k":"mizah","n":[0.0,0.42,0.0,0.0],"cb":0.0,"et":0.76,"tz":0.73,"pi":0.22},{"m":"girişim kurma için öneriniz var mı? Deneyimi olanlar yazsın.","y":"Onur","k":"soru_tartisma","n":[0.0,0.0,0.0,1.0],"cb":0.0,"et":0.64,"tz":0.44,"pi":0.26},{"m":"takım çalışması konusunda ne düşünüyorsunuz? Gerçekten merak ediyorum.","y":"Barış","k":"soru_tartisma","n":[0.0,0.0,0.0,1.0],"cb":0.0,"et":0.56,"tz":0.54,"pi":0.27},{"m":"Sizce yurt dışı yüksek lisans nasıl çözülür?","y":"Ceren","k":"soru_tartisma","n":[0.35,0.0,0.0,1.0],"cb":0.0,"et":0.65,"tz":0.03,"pi":0.19},{"m":"CV yazma konusunda 2 yılda öğrendiklerimi tek yazıda topladım.","y":"Yaparak Öğrenen","k":"nasil_yapilir","n":[0.4,0.0,0.0,0.0],"cb":0.0,"et":0.32,"tz":0.86,"pi":0.1},{"m":"bölüm seçimi konusunda ne düşünüyorsunuz? Gerçekten merak ediyorum.","y":"Barış","k":"soru_tartisma","n":[0.0,0.0,0.0,1.0],"cb":0.0,"et":0.61,"tz":0.87,"pi":0.22},{"m":"Sizce takım çalışması nasıl çözülür?","y":"Naz","k":"soru_tartisma","n":[0.35,0.0,0.0,1.0],"cb":0.0,"et":0.71,"tz":0.55,"pi":0.15},{"m":"Uzun zamandır takım antrenmanı yapmamıştık. Güzeldi.","y":"Mert","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.3],"cb":0.0,"et":0.44,"tz":0.97,"pi":0.03},{"m":"Bugün asistan hocam yaşadım, hâlâ inanamıyorum.","y":"kampüs hâlleri","k":"mizah","n":[0.0,0.6,0.0,0.0],"cb":0.0,"et":0.83,"tz":0.89,"pi":0.28},{"m":"dans akımı — son 10 saniye için kal.","y":"Akış TV","k":"eglence_video","n":[0.0,0.7,0.0,0.0],"cb":0.0,"et":0.86,"tz":0.06,"pi":0.44},{"m":"popüler bir tartışma tartışması büyüyor. Taraflar birbirine girdi.","y":"Bunu Gördünüz mü?","k":"clickbait_kiskirtici","n":[0.0,0.0,0.25,0.0],"cb":0.9,"et":0.87,"tz":0.14,"pi":0.83},{"m":"CNC tezgâh ayarı konusunda 2 yılda öğrendiklerimi tek yazıda topladım.","y":"Atölye Günlüğü","k":"nasil_yapilir","n":[0.4,0.0,0.0,0.0],"cb":0.0,"et":0.33,"tz":0.48,"pi":0.2},{"m":"otobüs beklemek ile ilgili bu kadar komik bir şey görmemiştim.","y":"vize mağduru","k":"mizah","n":[0.0,0.75,0.0,0.0],"cb":0.0,"et":0.64,"tz":0.85,"pi":0.41},{"m":"Bugün atölye günü. İyi ki varsınız.","y":"Elif","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.47],"cb":0.0,"et":0.49,"tz":0.6,"pi":0.09},{"m":"3 milyon izlenme almış sokak müzisyeni videosu.","y":"Viral Kutu","k":"eglence_video","n":[0.0,0.45,0.0,0.0],"cb":0.0,"et":0.82,"tz":0.82,"pi":0.28},{"m":"Bu videoyu izlemeden geçme. spor hareketi","y":"İzle Geç","k":"eglence_video","n":[0.0,0.6,0.0,0.0],"cb":0.0,"et":0.79,"tz":0.76,"pi":0.47},{"m":"Adım adım PCB tasarımı. Başlangıç seviyesi için.","y":"Tezgâh Başı","k":"nasil_yapilir","n":[0.45,0.0,0.0,0.0],"cb":0.0,"et":0.54,"tz":0.4,"pi":0.1},{"m":"Adım adım CAD modelleme. Başlangıç seviyesi için.","y":"Uygulamalı","k":"nasil_yapilir","n":[0.45,0.0,0.0,0.0],"cb":0.0,"et":0.48,"tz":0.37,"pi":0.04},{"m":"teknoloji yatırımları hakkında herkesin atladığı bir nokta var.","y":"Uzun Yazı","k":"gundem_analiz","n":[0.0,0.0,0.65,0.0],"cb":0.0,"et":0.52,"tz":0.02,"pi":0.14},{"m":"mezuniyet için herkese teşekkürler.","y":"Zeynep","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.72],"cb":0.0,"et":0.41,"tz":0.86,"pi":0.03},{"m":"tarım üretimi: kısa vadeli ve uzun vadeli sonuçları ne olur?","y":"Analiz Defteri","k":"gundem_analiz","n":[0.0,0.0,1.0,0.28],"cb":0.0,"et":0.58,"tz":0.14,"pi":0.13},{"m":"spor hareketi — son 10 saniye için kal.","y":"Viral Kutu","k":"eglence_video","n":[0.0,0.4,0.0,0.0],"cb":0.0,"et":0.8,"tz":0.63,"pi":0.35},{"m":"ekonomi verileri konusunda resmî kurum bilgilendirmesi yayımlandı.","y":"Kampüs Duyuru","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.62,"tz":0.01,"pi":0.15},{"m":"yazıcı kuyruğu deyince aklıma gelen tek şey.","y":"vize mağduru","k":"mizah","n":[0.0,0.3,0.0,0.0],"cb":0.0,"et":0.62,"tz":0.66,"pi":0.38},{"m":"sınav takvimi: bugün açıklanan verilere göre durum.","y":"Gündem Masası","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.8,"tz":0.64,"pi":0.06},{"m":"kontrol sistemleri hakkında bilmen gereken 7 temel kavram.","y":"Kürsü","k":"egitim_anlatim","n":[0.6,0.0,0.0,0.0],"cb":0.0,"et":0.27,"tz":0.37,"pi":0.0},{"m":"tarım üretimi hakkında herkesin atladığı bir nokta var.","y":"Uzun Yazı","k":"gundem_analiz","n":[0.0,0.0,0.65,0.0],"cb":0.0,"et":0.57,"tz":0.34,"pi":0.21},{"m":"sinyal işleme öğrenmek isteyenler için hazırladığım yol haritası.","y":"Mühendislik Notları","k":"egitim_anlatim","n":[0.82,0.0,0.0,0.0],"cb":0.0,"et":0.27,"tz":0.95,"pi":0.07},{"m":"veri temizleme konusunda 2 yılda öğrendiklerimi tek yazıda topladım.","y":"Tezgâh Başı","k":"nasil_yapilir","n":[0.4,0.0,0.0,0.0],"cb":0.0,"et":0.54,"tz":0.2,"pi":0.07},{"m":"algoritma analizi öğrenmek isteyenler için hazırladığım yol haritası.","y":"Ders Defteri","k":"egitim_anlatim","n":[1.0,0.0,0.0,0.0],"cb":0.0,"et":0.43,"tz":0.17,"pi":0.0},{"m":"3 milyon izlenme almış şaşırtan illüzyon videosu.","y":"Günün Videosu","k":"eglence_video","n":[0.0,1.0,0.0,0.0],"cb":0.0,"et":0.87,"tz":0.2,"pi":0.31},{"m":"yapay zekâ güvenliği alanında yeni bir çalışma yayımlandı. Özetliyorum.","y":"Teknoloji Gündemi","k":"bilim_teknoloji","n":[0.75,0.0,0.0,0.0],"cb":0.0,"et":0.52,"tz":0.5,"pi":0.22},{"m":"Uzun zamandır mezuniyet yapmamıştık. Güzeldi.","y":"Elif","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.3],"cb":0.0,"et":0.48,"tz":0.88,"pi":0.15},{"m":"mezuniyet için herkese teşekkürler.","y":"Selin","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.72],"cb":0.0,"et":0.36,"tz":0.83,"pi":0.0},{"m":"füzyon enerjisi alanında yeni bir çalışma yayımlandı. Özetliyorum.","y":"Laboratuvar Notu","k":"bilim_teknoloji","n":[0.75,0.0,0.0,0.0],"cb":0.0,"et":0.57,"tz":0.53,"pi":0.15},{"m":"Bugün sabah dersleri yaşadım, hâlâ inanamıyorum.","y":"vize mağduru","k":"mizah","n":[0.0,0.6,0.0,0.0],"cb":0.0,"et":0.68,"tz":0.81,"pi":0.39},{"m":"yapay zekâ güvenliği alanında yeni bir çalışma yayımlandı. Özetliyorum.","y":"Teknoloji Gündemi","k":"bilim_teknoloji","n":[0.75,0.0,0.0,0.0],"cb":0.0,"et":0.45,"tz":0.43,"pi":0.02},{"m":"3 milyon izlenme almış yemek tarifi hızlı çekim videosu.","y":"Viral Kutu","k":"eglence_video","n":[0.0,0.45,0.0,0.0],"cb":0.0,"et":0.68,"tz":0.58,"pi":0.49},{"m":"genç işsizliği hakkında herkesin atladığı bir nokta var.","y":"Analiz Defteri","k":"gundem_analiz","n":[0.0,0.0,0.68,0.0],"cb":0.0,"et":0.59,"tz":0.58,"pi":0.17},{"m":"veri temizleme yaparken en çok yapılan 4 hata ve çözümü.","y":"Yaparak Öğrenen","k":"nasil_yapilir","n":[0.5,0.0,0.0,0.0],"cb":0.0,"et":0.34,"tz":0.06,"pi":0.0},{"m":"proje yönetimi konusunda 2 yılda öğrendiklerimi tek yazıda topladım.","y":"Yaparak Öğrenen","k":"nasil_yapilir","n":[0.4,0.0,0.0,0.0],"cb":0.0,"et":0.45,"tz":0.09,"pi":0.19},{"m":"Üniversitede kimsenin anlatmadığı şekilde makine öğrenmesi. Uzun anlatım.","y":"Kürsü","k":"egitim_anlatim","n":[0.4,0.0,0.0,0.0],"cb":0.0,"et":0.43,"tz":0.71,"pi":0.09},{"m":"hava durumu uyarısı: bugün açıklanan verilere göre durum.","y":"Haber Akışı","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.66,"tz":0.72,"pi":0.12},{"m":"Adım adım CNC tezgâh ayarı. Başlangıç seviyesi için.","y":"Yaparak Öğrenen","k":"nasil_yapilir","n":[0.45,0.0,0.0,0.0],"cb":0.0,"et":0.41,"tz":0.31,"pi":0.13},{"m":"Sizce zaman yönetimi nasıl çözülür?","y":"Ceren","k":"soru_tartisma","n":[0.35,0.0,0.0,1.0],"cb":0.0,"et":0.62,"tz":0.87,"pi":0.2},{"m":"uzay teleskopları alanında yeni bir çalışma yayımlandı. Özetliyorum.","y":"Araştırma Özeti","k":"bilim_teknoloji","n":[0.75,0.0,0.0,0.0],"cb":0.0,"et":0.48,"tz":0.34,"pi":0.17},{"m":"Bugün atölye günü. İyi ki varsınız.","y":"Selin","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.47],"cb":0.0,"et":0.47,"tz":0.7,"pi":0.0},{"m":"termodinamik konusunu 5 dakikada anlatıyorum. Baştan sona örnekli.","y":"Ders Defteri","k":"egitim_anlatim","n":[1.0,0.0,0.0,0.0],"cb":0.0,"et":0.45,"tz":0.28,"pi":0.12},{"m":"Herkes popüler bir tartışma konusunda yanılıyor. İşte asıl sebep.","y":"Trend Merkez","k":"clickbait_kiskirtici","n":[0.25,0.25,0.25,0.25],"cb":0.9,"et":0.91,"tz":0.63,"pi":0.71},{"m":"Adım adım 3B yazıcı kalibrasyonu. Başlangıç seviyesi için.","y":"Uygulamalı","k":"nasil_yapilir","n":[0.45,0.0,0.0,0.0],"cb":0.0,"et":0.49,"tz":0.57,"pi":0.11},{"m":"SON DAKİKA: burs başvuruları ile ilgili açıklama yapıldı.","y":"Kampüs Duyuru","k":"son_dakika_haber","n":[0.4,0.0,1.0,0.0],"cb":0.2,"et":0.72,"tz":0.52,"pi":0.14},{"m":"Uzun zamandır atölye günü yapmamıştık. Güzeldi.","y":"Emre","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.3],"cb":0.0,"et":0.57,"tz":0.93,"pi":0.11},{"m":"bilinen bir marka yapanlar dikkat! Sonuçları şok edici.","y":"Viral Haber","k":"clickbait_kiskirtici","n":[0.0,0.12,0.0,0.0],"cb":1.0,"et":0.83,"tz":0.79,"pi":0.67},{"m":"uzay teleskopları hakkında çok konuşulan ama yanlış bilinen bir şey var.","y":"Teknoloji Gündemi","k":"bilim_teknoloji","n":[0.3,0.0,0.0,0.0],"cb":0.0,"et":0.58,"tz":0.93,"pi":0.16},{"m":"Sizce ilk iş deneyimi nasıl çözülür?","y":"Ceren","k":"soru_tartisma","n":[0.35,0.0,0.0,1.0],"cb":0.0,"et":0.73,"tz":0.52,"pi":0.23},{"m":"o meşhur yöntem yapanlar dikkat! Sonuçları şok edici.","y":"Gündem Şok","k":"clickbait_kiskirtici","n":[0.09,0.12,0.0,0.0],"cb":1.0,"et":0.87,"tz":0.99,"pi":0.82},{"m":"sinyal işleme öğrenmek isteyenler için hazırladığım yol haritası.","y":"Anlatarak Öğren","k":"egitim_anlatim","n":[0.82,0.0,0.0,0.0],"cb":0.0,"et":0.3,"tz":0.23,"pi":0.0},{"m":"uzay teleskopları alanında yeni bir çalışma yayımlandı. Özetliyorum.","y":"Teknoloji Gündemi","k":"bilim_teknoloji","n":[0.75,0.0,0.0,0.0],"cb":0.0,"et":0.51,"tz":0.22,"pi":0.12},{"m":"istatistiksel çıkarım öğrenmek isteyenler için hazırladığım yol haritası.","y":"Anlatarak Öğren","k":"egitim_anlatim","n":[0.82,0.0,0.0,0.0],"cb":0.0,"et":0.33,"tz":0.24,"pi":0.09},{"m":"tarım üretimi meselesini rakamlarla inceledim. Detaylı analiz.","y":"Rakamların Dili","k":"gundem_analiz","n":[0.53,0.0,0.75,0.0],"cb":0.0,"et":0.48,"tz":0.17,"pi":0.22},{"m":"SON DAKİKA: hava durumu uyarısı ile ilgili açıklama yapıldı.","y":"Gündem Masası","k":"son_dakika_haber","n":[0.4,0.0,1.0,0.0],"cb":0.2,"et":0.79,"tz":0.41,"pi":0.17},{"m":"kedi refleksleri — son 10 saniye için kal.","y":"İzle Geç","k":"eglence_video","n":[0.0,0.7,0.0,0.0],"cb":0.0,"et":0.69,"tz":0.15,"pi":0.41},{"m":"makine öğrenmesi öğrenmek isteyenler için hazırladığım yol haritası.","y":"Kürsü","k":"egitim_anlatim","n":[0.82,0.0,0.0,0.0],"cb":0.0,"et":0.44,"tz":0.21,"pi":0.18},{"m":"3B yazıcı kalibrasyonu için kullandığım yöntem. Denedim, çalışıyor.","y":"Uygulamalı","k":"nasil_yapilir","n":[0.35,0.0,0.0,0.0],"cb":0.0,"et":0.49,"tz":0.11,"pi":0.08},{"m":"veri yapıları nasıl çalışır? Sıfırdan başlayarak adım adım açıklama.","y":"Ders Defteri","k":"egitim_anlatim","n":[1.0,0.0,0.0,0.28],"cb":0.0,"et":0.36,"tz":0.24,"pi":0.0},{"m":"Kimse konuşmuyor ama sabah dersleri gerçekten absürt.","y":"geç kalan öğrenci","k":"mizah","n":[0.0,0.42,0.0,0.0],"cb":0.0,"et":0.63,"tz":0.07,"pi":0.24},{"m":"hava durumu uyarısı konusunda resmî kurum bilgilendirmesi yayımlandı.","y":"Şehir Bülteni","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.78,"tz":0.47,"pi":0.13},{"m":"Fourier dönüşümü hakkında bilmen gereken 7 temel kavram.","y":"Kürsü","k":"egitim_anlatim","n":[0.6,0.0,0.0,0.0],"cb":0.0,"et":0.31,"tz":0.63,"pi":0.14},{"m":"Fourier dönüşümü konusunu 5 dakikada anlatıyorum. Baştan sona örnekli.","y":"Kürsü","k":"egitim_anlatim","n":[1.0,0.0,0.0,0.0],"cb":0.0,"et":0.36,"tz":0.18,"pi":0.0},{"m":"füzyon enerjisi: neden önemli ve bize ne getirecek?","y":"Laboratuvar Notu","k":"bilim_teknoloji","n":[0.55,0.0,0.0,0.28],"cb":0.0,"et":0.56,"tz":1.0,"pi":0.04},{"m":"Sizce bölüm seçimi nasıl çözülür?","y":"Ceren","k":"soru_tartisma","n":[0.35,0.0,0.0,1.0],"cb":0.0,"et":0.54,"tz":0.67,"pi":0.25},{"m":"yazıcı kuyruğu deyince aklıma gelen tek şey.","y":"laboratuvar kaçkını","k":"mizah","n":[0.0,0.3,0.0,0.0],"cb":0.0,"et":0.81,"tz":0.43,"pi":0.22},{"m":"Sizce zaman yönetimi nasıl çözülür?","y":"Naz","k":"soru_tartisma","n":[0.35,0.0,0.0,1.0],"cb":0.0,"et":0.64,"tz":0.52,"pi":0.28},{"m":"eğitim politikaları: kısa vadeli ve uzun vadeli sonuçları ne olur?","y":"Uzun Yazı","k":"gundem_analiz","n":[0.0,0.0,1.0,0.28],"cb":0.0,"et":0.51,"tz":0.19,"pi":0.17},{"m":"popüler bir tartışma yapanlar dikkat! Sonuçları şok edici.","y":"Gündem Şok","k":"clickbait_kiskirtici","n":[0.0,0.12,0.0,0.0],"cb":1.0,"et":0.86,"tz":0.16,"pi":0.77},{"m":"Uzun zamandır kamp dönüşü yapmamıştık. Güzeldi.","y":"Burak","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.3],"cb":0.0,"et":0.47,"tz":0.42,"pi":0.2},{"m":"yurt dışı yüksek lisans için öneriniz var mı? Deneyimi olanlar yazsın.","y":"Yiğit","k":"soru_tartisma","n":[0.0,0.0,0.0,1.0],"cb":0.0,"et":0.61,"tz":0.58,"pi":0.1},{"m":"malzeme bilimi hakkında bilmen gereken 7 temel kavram.","y":"Kürsü","k":"egitim_anlatim","n":[0.6,0.0,0.0,0.0],"cb":0.0,"et":0.41,"tz":0.42,"pi":0.0},{"m":"bu alışkanlık hakkında kimsenin söylemediği GERÇEK ortaya çıktı!","y":"Bunu Gördünüz mü?","k":"clickbait_kiskirtici","n":[0.0,0.12,0.3,0.0],"cb":1.0,"et":0.93,"tz":0.81,"pi":0.8},{"m":"CNC tezgâh ayarı konusunda 2 yılda öğrendiklerimi tek yazıda topladım.","y":"Yaparak Öğrenen","k":"nasil_yapilir","n":[0.4,0.0,0.0,0.0],"cb":0.0,"et":0.37,"tz":0.78,"pi":0.05},{"m":"Bu videoyu izlemeden geçme. spor hareketi","y":"İzle Geç","k":"eglence_video","n":[0.0,0.6,0.0,0.0],"cb":0.0,"et":0.71,"tz":0.41,"pi":0.46},{"m":"Herkes popüler bir tartışma konusunda yanılıyor. İşte asıl sebep.","y":"Trend Merkez","k":"clickbait_kiskirtici","n":[0.25,0.25,0.25,0.25],"cb":0.9,"et":0.88,"tz":0.06,"pi":0.81},{"m":"veri temizleme yaparken en çok yapılan 4 hata ve çözümü.","y":"Atölye Günlüğü","k":"nasil_yapilir","n":[0.5,0.0,0.0,0.0],"cb":0.0,"et":0.36,"tz":0.08,"pi":0.19},{"m":"hava durumu uyarısı konusunda resmî kurum bilgilendirmesi yayımlandı.","y":"Haber Akışı","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.65,"tz":0.53,"pi":0.2},{"m":"termodinamik öğrenmek isteyenler için hazırladığım yol haritası.","y":"Ders Defteri","k":"egitim_anlatim","n":[0.82,0.0,0.0,0.0],"cb":0.0,"et":0.41,"tz":0.55,"pi":0.0},{"m":"tarım üretimi meselesini rakamlarla inceledim. Detaylı analiz.","y":"Uzun Yazı","k":"gundem_analiz","n":[0.53,0.0,0.75,0.0],"cb":0.0,"et":0.49,"tz":0.66,"pi":0.32},{"m":"3 milyon izlenme almış yemek tarifi hızlı çekim videosu.","y":"İzle Geç","k":"eglence_video","n":[0.0,0.45,0.0,0.0],"cb":0.0,"et":0.71,"tz":0.43,"pi":0.43},{"m":"Bu videoyu izlemeden geçme. yemek tarifi hızlı çekim","y":"Günün Videosu","k":"eglence_video","n":[0.0,0.6,0.0,0.0],"cb":0.0,"et":0.78,"tz":0.88,"pi":0.45},{"m":"sinir ağı mimarileri alanında yeni bir çalışma yayımlandı. Özetliyorum.","y":"Teknoloji Gündemi","k":"bilim_teknoloji","n":[0.75,0.0,0.0,0.0],"cb":0.0,"et":0.47,"tz":0.57,"pi":0.22},{"m":"3 milyon izlenme almış yemek tarifi hızlı çekim videosu.","y":"İzle Geç","k":"eglence_video","n":[0.0,0.45,0.0,0.0],"cb":0.0,"et":0.87,"tz":0.35,"pi":0.49},{"m":"genç işsizliği: kısa vadeli ve uzun vadeli sonuçları ne olur?","y":"Rakamların Dili","k":"gundem_analiz","n":[0.0,0.0,1.0,0.28],"cb":0.0,"et":0.55,"tz":0.04,"pi":0.09},{"m":"yurt dışı yüksek lisans için öneriniz var mı? Deneyimi olanlar yazsın.","y":"Deniz","k":"soru_tartisma","n":[0.0,0.0,0.0,1.0],"cb":0.0,"et":0.7,"tz":0.78,"pi":0.12},{"m":"malzeme bilimi konusunu 5 dakikada anlatıyorum. Baştan sona örnekli.","y":"Mühendislik Notları","k":"egitim_anlatim","n":[1.0,0.0,0.0,0.0],"cb":0.0,"et":0.4,"tz":0.48,"pi":0.06},{"m":"3B yazıcı kalibrasyonu konusunda 2 yılda öğrendiklerimi tek yazıda topladım.","y":"Atölye Günlüğü","k":"nasil_yapilir","n":[0.4,0.0,0.0,0.0],"cb":0.0,"et":0.43,"tz":0.8,"pi":0.13},{"m":"Sizce ilk iş deneyimi nasıl çözülür?","y":"Onur","k":"soru_tartisma","n":[0.35,0.0,0.0,1.0],"cb":0.0,"et":0.72,"tz":0.68,"pi":0.28},{"m":"Kimse konuşmuyor ama grup ödevi gerçekten absürt.","y":"son sıra","k":"mizah","n":[0.0,0.42,0.0,0.0],"cb":0.0,"et":0.65,"tz":0.28,"pi":0.38},{"m":"CRISPR hakkında çok konuşulan ama yanlış bilinen bir şey var.","y":"Laboratuvar Notu","k":"bilim_teknoloji","n":[0.3,0.0,0.3,0.0],"cb":0.2,"et":0.45,"tz":0.53,"pi":0.08},{"m":"sokak müzisyeni — son 10 saniye için kal.","y":"Viral Kutu","k":"eglence_video","n":[0.0,0.4,0.0,0.0],"cb":0.0,"et":0.74,"tz":0.28,"pi":0.33},{"m":"Bugün ekipçe buluşma. İyi ki varsınız.","y":"Emre","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,1.0],"cb":0.0,"et":0.48,"tz":0.49,"pi":0.2},{"m":"asistan hocam deyince aklıma gelen tek şey.","y":"geç kalan öğrenci","k":"mizah","n":[0.0,0.3,0.0,0.0],"cb":0.0,"et":0.63,"tz":0.71,"pi":0.26},{"m":"Bugün atölye günü. İyi ki varsınız.","y":"Ayşe","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.47],"cb":0.0,"et":0.47,"tz":0.48,"pi":0.11},{"m":"otobüs beklemek deyince aklıma gelen tek şey.","y":"vize mağduru","k":"mizah","n":[0.0,0.3,0.0,0.0],"cb":0.0,"et":0.81,"tz":0.58,"pi":0.32},{"m":"ilk iş deneyimi konusunda ne düşünüyorsunuz? Gerçekten merak ediyorum.","y":"Ceren","k":"soru_tartisma","n":[0.0,0.0,0.0,1.0],"cb":0.0,"et":0.7,"tz":0.25,"pi":0.2},{"m":"kod optimizasyonu için kullandığım yöntem. Denedim, çalışıyor.","y":"Prototip Defteri","k":"nasil_yapilir","n":[0.35,0.0,0.0,0.0],"cb":0.0,"et":0.35,"tz":0.95,"pi":0.12},{"m":"olasılık teorisi öğrenmek isteyenler için hazırladığım yol haritası.","y":"Formül ve Ötesi","k":"egitim_anlatim","n":[0.82,0.0,0.0,0.0],"cb":0.0,"et":0.25,"tz":0.11,"pi":0.0},{"m":"kedi refleksleri — son 10 saniye için kal.","y":"Akış TV","k":"eglence_video","n":[0.0,0.7,0.0,0.0],"cb":0.0,"et":0.73,"tz":0.25,"pi":0.32},{"m":"CNC tezgâh ayarı konusunda 2 yılda öğrendiklerimi tek yazıda topladım.","y":"Tezgâh Başı","k":"nasil_yapilir","n":[0.4,0.0,0.0,0.0],"cb":0.0,"et":0.49,"tz":0.14,"pi":0.08},{"m":"Fourier dönüşümü konusunu 5 dakikada anlatıyorum. Baştan sona örnekli.","y":"Anlatarak Öğren","k":"egitim_anlatim","n":[1.0,0.0,0.0,0.0],"cb":0.0,"et":0.36,"tz":0.03,"pi":0.1},{"m":"Sizce zaman yönetimi nasıl çözülür?","y":"Barış","k":"soru_tartisma","n":[0.35,0.0,0.0,1.0],"cb":0.0,"et":0.69,"tz":0.36,"pi":0.14},{"m":"hava durumu uyarısı konusunda resmî kurum bilgilendirmesi yayımlandı.","y":"Haber Akışı","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.8,"tz":0.77,"pi":0.24},{"m":"o meşhur yöntem yapanlar dikkat! Sonuçları şok edici.","y":"Gündem Şok","k":"clickbait_kiskirtici","n":[0.09,0.12,0.0,0.0],"cb":1.0,"et":0.86,"tz":0.22,"pi":0.84},{"m":"genç işsizliği: kısa vadeli ve uzun vadeli sonuçları ne olur?","y":"Analiz Defteri","k":"gundem_analiz","n":[0.0,0.0,1.0,0.28],"cb":0.0,"et":0.61,"tz":0.47,"pi":0.1},{"m":"yemek tarifi hızlı çekim — son 10 saniye için kal.","y":"İzle Geç","k":"eglence_video","n":[0.0,0.4,0.0,0.0],"cb":0.0,"et":0.89,"tz":0.17,"pi":0.28},{"m":"Uzun zamandır ekipçe buluşma yapmamıştık. Güzeldi.","y":"Kerem","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,1.0],"cb":0.0,"et":0.38,"tz":0.72,"pi":0.01},{"m":"makine öğrenmesi öğrenmek isteyenler için hazırladığım yol haritası.","y":"Ders Defteri","k":"egitim_anlatim","n":[0.82,0.0,0.0,0.0],"cb":0.0,"et":0.27,"tz":0.32,"pi":0.0},{"m":"Herkes bilinen bir marka konusunda yanılıyor. İşte asıl sebep.","y":"Gündem Şok","k":"clickbait_kiskirtici","n":[0.25,0.25,0.25,0.25],"cb":0.9,"et":0.78,"tz":0.91,"pi":0.64},{"m":"drone montajı yaparken en çok yapılan 4 hata ve çözümü.","y":"Uygulamalı","k":"nasil_yapilir","n":[0.5,0.0,0.0,0.0],"cb":0.0,"et":0.35,"tz":0.8,"pi":0.18},{"m":"3 milyon izlenme almış kedi refleksleri videosu.","y":"İzle Geç","k":"eglence_video","n":[0.0,0.75,0.0,0.0],"cb":0.0,"et":0.67,"tz":0.05,"pi":0.38},{"m":"genç işsizliği meselesini rakamlarla inceledim. Detaylı analiz.","y":"Analiz Defteri","k":"gundem_analiz","n":[0.53,0.0,0.78,0.0],"cb":0.0,"et":0.61,"tz":0.15,"pi":0.25},{"m":"veri yapıları hakkında bilmen gereken 7 temel kavram.","y":"Mühendislik Notları","k":"egitim_anlatim","n":[0.6,0.0,0.0,0.0],"cb":0.0,"et":0.38,"tz":0.9,"pi":0.08},{"m":"tarım üretimi: kısa vadeli ve uzun vadeli sonuçları ne olur?","y":"Uzun Yazı","k":"gundem_analiz","n":[0.0,0.0,1.0,0.28],"cb":0.0,"et":0.64,"tz":0.8,"pi":0.16},{"m":"Uzun zamandır takım antrenmanı yapmamıştık. Güzeldi.","y":"Ayşe","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.3],"cb":0.0,"et":0.41,"tz":0.51,"pi":0.15},{"m":"uzay teleskopları alanında yeni bir çalışma yayımlandı. Özetliyorum.","y":"Teknoloji Gündemi","k":"bilim_teknoloji","n":[0.75,0.0,0.0,0.0],"cb":0.0,"et":0.54,"tz":0.68,"pi":0.12},{"m":"Sizce bölüm seçimi nasıl çözülür?","y":"Deniz","k":"soru_tartisma","n":[0.35,0.0,0.0,1.0],"cb":0.0,"et":0.53,"tz":0.45,"pi":0.22},{"m":"popüler bir tartışma yapanlar dikkat! Sonuçları şok edici.","y":"Gündem Şok","k":"clickbait_kiskirtici","n":[0.0,0.12,0.0,0.0],"cb":1.0,"et":0.93,"tz":0.92,"pi":0.71},{"m":"yemek tarifi hızlı çekim — son 10 saniye için kal.","y":"İzle Geç","k":"eglence_video","n":[0.0,0.4,0.0,0.0],"cb":0.0,"et":0.8,"tz":0.01,"pi":0.36},{"m":"3 milyon izlenme almış spor hareketi videosu.","y":"Akış TV","k":"eglence_video","n":[0.0,0.45,0.0,0.0],"cb":0.0,"et":0.81,"tz":0.14,"pi":0.39},{"m":"akışkanlar mekaniği öğrenmek isteyenler için hazırladığım yol haritası.","y":"Mühendislik Notları","k":"egitim_anlatim","n":[0.82,0.0,0.0,0.0],"cb":0.0,"et":0.41,"tz":0.65,"pi":0.07},{"m":"Bu videoyu izlemeden geçme. spor hareketi","y":"Günün Videosu","k":"eglence_video","n":[0.0,0.6,0.0,0.0],"cb":0.0,"et":0.77,"tz":0.36,"pi":0.35},{"m":"sokak müzisyeni — son 10 saniye için kal.","y":"İzle Geç","k":"eglence_video","n":[0.0,0.4,0.0,0.0],"cb":0.0,"et":0.75,"tz":0.71,"pi":0.41},{"m":"Adım adım drone montajı. Başlangıç seviyesi için.","y":"Tezgâh Başı","k":"nasil_yapilir","n":[0.45,0.0,0.0,0.0],"cb":0.0,"et":0.41,"tz":0.94,"pi":0.04},{"m":"CRISPR alanında yeni bir çalışma yayımlandı. Özetliyorum.","y":"Bilim Kısaca","k":"bilim_teknoloji","n":[0.75,0.0,0.3,0.0],"cb":0.2,"et":0.52,"tz":0.94,"pi":0.13},{"m":"kod optimizasyonu için kullandığım yöntem. Denedim, çalışıyor.","y":"Tezgâh Başı","k":"nasil_yapilir","n":[0.35,0.0,0.0,0.0],"cb":0.0,"et":0.48,"tz":0.4,"pi":0.21},{"m":"kontrol sistemleri öğrenmek isteyenler için hazırladığım yol haritası.","y":"Mühendislik Notları","k":"egitim_anlatim","n":[0.82,0.0,0.0,0.0],"cb":0.0,"et":0.34,"tz":0.06,"pi":0.0},{"m":"akışkanlar mekaniği konusunu 5 dakikada anlatıyorum. Baştan sona örnekli.","y":"Kürsü","k":"egitim_anlatim","n":[1.0,0.0,0.0,0.0],"cb":0.0,"et":0.28,"tz":0.48,"pi":0.0},{"m":"Bu videoyu izlemeden geçme. dans akımı","y":"Viral Kutu","k":"eglence_video","n":[0.0,0.9,0.0,0.0],"cb":0.0,"et":0.74,"tz":0.36,"pi":0.36},{"m":"bilinen bir marka tartışması büyüyor. Taraflar birbirine girdi.","y":"Gündem Şok","k":"clickbait_kiskirtici","n":[0.0,0.0,0.25,0.0],"cb":0.9,"et":0.83,"tz":0.38,"pi":0.64},{"m":"sabah dersleri ile ilgili bu kadar komik bir şey görmemiştim.","y":"vize mağduru","k":"mizah","n":[0.0,0.75,0.0,0.0],"cb":0.0,"et":0.66,"tz":0.74,"pi":0.3},{"m":"staj görüşmesi deyince aklıma gelen tek şey.","y":"vize mağduru","k":"mizah","n":[0.0,0.3,0.0,0.0],"cb":0.0,"et":0.62,"tz":0.95,"pi":0.19},{"m":"Uzun zamandır takım antrenmanı yapmamıştık. Güzeldi.","y":"Elif","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.3],"cb":0.0,"et":0.5,"tz":0.29,"pi":0.16},{"m":"uzay teleskopları hakkında çok konuşulan ama yanlış bilinen bir şey var.","y":"Laboratuvar Notu","k":"bilim_teknoloji","n":[0.3,0.0,0.0,0.0],"cb":0.0,"et":0.43,"tz":0.77,"pi":0.15},{"m":"yurt dışı yüksek lisans için öneriniz var mı? Deneyimi olanlar yazsın.","y":"Yiğit","k":"soru_tartisma","n":[0.0,0.0,0.0,1.0],"cb":0.0,"et":0.51,"tz":0.9,"pi":0.15},{"m":"füzyon enerjisi hakkında çok konuşulan ama yanlış bilinen bir şey var.","y":"Araştırma Özeti","k":"bilim_teknoloji","n":[0.3,0.0,0.0,0.0],"cb":0.0,"et":0.47,"tz":0.09,"pi":0.15},{"m":"Uzun zamandır atölye günü yapmamıştık. Güzeldi.","y":"Mert","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.3],"cb":0.0,"et":0.34,"tz":0.7,"pi":0.1},{"m":"Kimse konuşmuyor ama sınav sonucu gerçekten absürt.","y":"son sıra","k":"mizah","n":[0.0,0.42,0.0,0.0],"cb":0.0,"et":0.83,"tz":0.35,"pi":0.33},{"m":"teknoloji yatırımları hakkında herkesin atladığı bir nokta var.","y":"Uzun Yazı","k":"gundem_analiz","n":[0.0,0.0,0.65,0.0],"cb":0.0,"et":0.6,"tz":0.04,"pi":0.2},{"m":"asistan hocam deyince aklıma gelen tek şey.","y":"geç kalan öğrenci","k":"mizah","n":[0.0,0.3,0.0,0.0],"cb":0.0,"et":0.67,"tz":0.56,"pi":0.28},{"m":"enerji dönüşümü meselesini rakamlarla inceledim. Detaylı analiz.","y":"Rakamların Dili","k":"gundem_analiz","n":[0.53,0.0,0.75,0.0],"cb":0.0,"et":0.49,"tz":0.12,"pi":0.1},{"m":"Kimse konuşmuyor ama final haftası gerçekten absürt.","y":"kampüs hâlleri","k":"mizah","n":[0.0,0.42,0.0,0.0],"cb":0.0,"et":0.65,"tz":0.42,"pi":0.27},{"m":"yeni yönetmelik: bugün açıklanan verilere göre durum.","y":"Şehir Bülteni","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.7,"tz":0.41,"pi":0.27},{"m":"Sizce girişim kurma nasıl çözülür?","y":"Barış","k":"soru_tartisma","n":[0.35,0.0,0.0,1.0],"cb":0.0,"et":0.53,"tz":0.09,"pi":0.26},{"m":"sunum hazırlama yaparken en çok yapılan 4 hata ve çözümü.","y":"Atölye Günlüğü","k":"nasil_yapilir","n":[0.5,0.0,0.0,0.0],"cb":0.0,"et":0.46,"tz":0.96,"pi":0.05},{"m":"Bugün kampüs yemekhanesi yaşadım, hâlâ inanamıyorum.","y":"son sıra","k":"mizah","n":[0.0,0.6,0.0,0.0],"cb":0.0,"et":0.72,"tz":0.83,"pi":0.2},{"m":"Kimse konuşmuyor ama yazıcı kuyruğu gerçekten absürt.","y":"geç kalan öğrenci","k":"mizah","n":[0.0,0.42,0.0,0.0],"cb":0.0,"et":0.76,"tz":0.65,"pi":0.35},{"m":"Üniversitede kimsenin anlatmadığı şekilde lineer cebir. Uzun anlatım.","y":"Kürsü","k":"egitim_anlatim","n":[0.25,0.25,0.25,0.25],"cb":0.0,"et":0.34,"tz":0.52,"pi":0.0},{"m":"sinir ağı mimarileri: neden önemli ve bize ne getirecek?","y":"Bilim Kısaca","k":"bilim_teknoloji","n":[0.55,0.0,0.0,0.28],"cb":0.0,"et":0.6,"tz":0.4,"pi":0.12},{"m":"ulaşım düzenlemesi: bugün açıklanan verilere göre durum.","y":"Şehir Bülteni","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.78,"tz":0.32,"pi":0.12},{"m":"Adım adım CAD modelleme. Başlangıç seviyesi için.","y":"Atölye Günlüğü","k":"nasil_yapilir","n":[0.45,0.0,0.0,0.0],"cb":0.0,"et":0.53,"tz":0.5,"pi":0.13},{"m":"Bugün final haftası yaşadım, hâlâ inanamıyorum.","y":"vize mağduru","k":"mizah","n":[0.0,0.6,0.0,0.0],"cb":0.0,"et":0.64,"tz":0.42,"pi":0.36},{"m":"veri temizleme konusunda 2 yılda öğrendiklerimi tek yazıda topladım.","y":"Yaparak Öğrenen","k":"nasil_yapilir","n":[0.4,0.0,0.0,0.0],"cb":0.0,"et":0.42,"tz":0.8,"pi":0.2},{"m":"asistan hocam deyince aklıma gelen tek şey.","y":"laboratuvar kaçkını","k":"mizah","n":[0.0,0.3,0.0,0.0],"cb":0.0,"et":0.63,"tz":0.37,"pi":0.25},{"m":"SON DAKİKA: yeni yönetmelik ile ilgili açıklama yapıldı.","y":"Haber Akışı","k":"son_dakika_haber","n":[0.4,0.0,1.0,0.0],"cb":0.2,"et":0.56,"tz":0.13,"pi":0.16},{"m":"Bu videoyu izlemeden geçme. dans akımı","y":"İzle Geç","k":"eglence_video","n":[0.0,0.9,0.0,0.0],"cb":0.0,"et":0.88,"tz":0.18,"pi":0.28},{"m":"şehir planlaması: kısa vadeli ve uzun vadeli sonuçları ne olur?","y":"Rakamların Dili","k":"gundem_analiz","n":[0.0,0.0,1.0,0.28],"cb":0.0,"et":0.6,"tz":0.98,"pi":0.3},{"m":"burs başvuruları: bugün açıklanan verilere göre durum.","y":"Şehir Bülteni","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.75,"tz":0.61,"pi":0.27},{"m":"sabah dersleri ile ilgili bu kadar komik bir şey görmemiştim.","y":"son sıra","k":"mizah","n":[0.0,0.75,0.0,0.0],"cb":0.0,"et":0.69,"tz":0.37,"pi":0.33},{"m":"proje yönetimi için kullandığım yöntem. Denedim, çalışıyor.","y":"Atölye Günlüğü","k":"nasil_yapilir","n":[0.35,0.0,0.0,0.0],"cb":0.0,"et":0.51,"tz":0.87,"pi":0.1},{"m":"CRISPR alanında yeni bir çalışma yayımlandı. Özetliyorum.","y":"Bilim Kısaca","k":"bilim_teknoloji","n":[0.75,0.0,0.3,0.0],"cb":0.2,"et":0.39,"tz":0.22,"pi":0.11},{"m":"bölüm seçimi konusunda ne düşünüyorsunuz? Gerçekten merak ediyorum.","y":"Ceren","k":"soru_tartisma","n":[0.0,0.0,0.0,1.0],"cb":0.0,"et":0.55,"tz":0.17,"pi":0.21},{"m":"asistan hocam deyince aklıma gelen tek şey.","y":"son sıra","k":"mizah","n":[0.0,0.3,0.0,0.0],"cb":0.0,"et":0.82,"tz":0.02,"pi":0.22},{"m":"bilinen bir marka yapanlar dikkat! Sonuçları şok edici.","y":"Trend Merkez","k":"clickbait_kiskirtici","n":[0.0,0.12,0.0,0.0],"cb":1.0,"et":0.99,"tz":0.69,"pi":0.61},{"m":"CRISPR hakkında çok konuşulan ama yanlış bilinen bir şey var.","y":"Laboratuvar Notu","k":"bilim_teknoloji","n":[0.3,0.0,0.3,0.0],"cb":0.2,"et":0.57,"tz":0.6,"pi":0.05},{"m":"Adım adım veri temizleme. Başlangıç seviyesi için.","y":"Prototip Defteri","k":"nasil_yapilir","n":[0.45,0.0,0.0,0.0],"cb":0.0,"et":0.32,"tz":0.31,"pi":0.18},{"m":"sınav takvimi konusunda resmî kurum bilgilendirmesi yayımlandı.","y":"Kampüs Duyuru","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.79,"tz":0.89,"pi":0.26},{"m":"kontrol sistemleri konusunu 5 dakikada anlatıyorum. Baştan sona örnekli.","y":"Ders Defteri","k":"egitim_anlatim","n":[1.0,0.0,0.0,0.0],"cb":0.0,"et":0.44,"tz":0.24,"pi":0.1},{"m":"yurt dışı yüksek lisans konusunda ne düşünüyorsunuz? Gerçekten merak ediyorum.","y":"Naz","k":"soru_tartisma","n":[0.0,0.0,0.0,1.0],"cb":0.0,"et":0.57,"tz":0.71,"pi":0.14},{"m":"tarım üretimi hakkında herkesin atladığı bir nokta var.","y":"Analiz Defteri","k":"gundem_analiz","n":[0.0,0.0,0.65,0.0],"cb":0.0,"et":0.5,"tz":0.45,"pi":0.1},{"m":"yurt dışı yüksek lisans konusunda ne düşünüyorsunuz? Gerçekten merak ediyorum.","y":"Yiğit","k":"soru_tartisma","n":[0.0,0.0,0.0,1.0],"cb":0.0,"et":0.51,"tz":0.56,"pi":0.1},{"m":"enerji dönüşümü hakkında herkesin atladığı bir nokta var.","y":"Rakamların Dili","k":"gundem_analiz","n":[0.0,0.0,0.65,0.0],"cb":0.0,"et":0.44,"tz":0.32,"pi":0.11},{"m":"yeni çıkan ürün hakkında kimsenin söylemediği GERÇEK ortaya çıktı!","y":"Bunu Gördünüz mü?","k":"clickbait_kiskirtici","n":[0.0,0.12,0.3,0.0],"cb":1.0,"et":0.88,"tz":0.95,"pi":0.78},{"m":"Kimse konuşmuyor ama kampüs yemekhanesi gerçekten absürt.","y":"son sıra","k":"mizah","n":[0.0,0.42,0.0,0.0],"cb":0.0,"et":0.78,"tz":0.37,"pi":0.41},{"m":"füzyon enerjisi alanında yeni bir çalışma yayımlandı. Özetliyorum.","y":"Laboratuvar Notu","k":"bilim_teknoloji","n":[0.75,0.0,0.0,0.0],"cb":0.0,"et":0.4,"tz":0.06,"pi":0.03},{"m":"Üniversitede kimsenin anlatmadığı şekilde malzeme bilimi. Uzun anlatım.","y":"Mühendislik Notları","k":"egitim_anlatim","n":[0.25,0.25,0.25,0.25],"cb":0.0,"et":0.42,"tz":0.69,"pi":0.13},{"m":"sınav takvimi: bugün açıklanan verilere göre durum.","y":"Şehir Bülteni","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.69,"tz":0.19,"pi":0.08},{"m":"makine öğrenmesi öğrenmek isteyenler için hazırladığım yol haritası.","y":"Ders Defteri","k":"egitim_anlatim","n":[0.82,0.0,0.0,0.0],"cb":0.0,"et":0.42,"tz":0.68,"pi":0.18},{"m":"istatistiksel çıkarım konusunu 5 dakikada anlatıyorum. Baştan sona örnekli.","y":"Ders Defteri","k":"egitim_anlatim","n":[1.0,0.0,0.0,0.0],"cb":0.0,"et":0.47,"tz":0.9,"pi":0.19},{"m":"sinir ağı mimarileri alanında yeni bir çalışma yayımlandı. Özetliyorum.","y":"Bilim Kısaca","k":"bilim_teknoloji","n":[0.75,0.0,0.0,0.0],"cb":0.0,"et":0.44,"tz":0.33,"pi":0.14},{"m":"burs başvuruları konusunda resmî kurum bilgilendirmesi yayımlandı.","y":"Haber Akışı","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.59,"tz":0.0,"pi":0.28},{"m":"3B yazıcı kalibrasyonu yaparken en çok yapılan 4 hata ve çözümü.","y":"Uygulamalı","k":"nasil_yapilir","n":[0.5,0.0,0.0,0.0],"cb":0.0,"et":0.38,"tz":0.8,"pi":0.02},{"m":"katı hal bataryaları: neden önemli ve bize ne getirecek?","y":"Teknoloji Gündemi","k":"bilim_teknoloji","n":[0.55,0.0,0.0,0.28],"cb":0.0,"et":0.38,"tz":0.16,"pi":0.11},{"m":"atölye günü için herkese teşekkürler.","y":"Selin","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.72],"cb":0.0,"et":0.45,"tz":0.21,"pi":0.16},{"m":"makine öğrenmesi konusunu 5 dakikada anlatıyorum. Baştan sona örnekli.","y":"Mühendislik Notları","k":"egitim_anlatim","n":[1.0,0.0,0.0,0.0],"cb":0.0,"et":0.39,"tz":0.32,"pi":0.16},{"m":"yapay zekâ güvenliği hakkında çok konuşulan ama yanlış bilinen bir şey var.","y":"Teknoloji Gündemi","k":"bilim_teknoloji","n":[0.3,0.0,0.0,0.0],"cb":0.0,"et":0.45,"tz":0.28,"pi":0.2},{"m":"SON DAKİKA: yeni yönetmelik ile ilgili açıklama yapıldı.","y":"Haber Akışı","k":"son_dakika_haber","n":[0.4,0.0,1.0,0.0],"cb":0.2,"et":0.68,"tz":0.47,"pi":0.23},{"m":"sunum hazırlama konusunda 2 yılda öğrendiklerimi tek yazıda topladım.","y":"Tezgâh Başı","k":"nasil_yapilir","n":[0.4,0.0,0.0,0.0],"cb":0.0,"et":0.36,"tz":0.19,"pi":0.01},{"m":"sunum hazırlama için kullandığım yöntem. Denedim, çalışıyor.","y":"Atölye Günlüğü","k":"nasil_yapilir","n":[0.35,0.0,0.0,0.0],"cb":0.0,"et":0.35,"tz":0.42,"pi":0.22},{"m":"genç işsizliği meselesini rakamlarla inceledim. Detaylı analiz.","y":"Rakamların Dili","k":"gundem_analiz","n":[0.53,0.0,0.78,0.0],"cb":0.0,"et":0.51,"tz":0.28,"pi":0.23},{"m":"staj görüşmesi ile ilgili bu kadar komik bir şey görmemiştim.","y":"son sıra","k":"mizah","n":[0.0,0.75,0.0,0.0],"cb":0.0,"et":0.7,"tz":0.09,"pi":0.28},{"m":"sinir ağı mimarileri alanında yeni bir çalışma yayımlandı. Özetliyorum.","y":"Laboratuvar Notu","k":"bilim_teknoloji","n":[0.75,0.0,0.0,0.0],"cb":0.0,"et":0.44,"tz":0.73,"pi":0.21},{"m":"genç işsizliği: kısa vadeli ve uzun vadeli sonuçları ne olur?","y":"Analiz Defteri","k":"gundem_analiz","n":[0.0,0.0,1.0,0.28],"cb":0.0,"et":0.61,"tz":0.18,"pi":0.14},{"m":"Bu videoyu izlemeden geçme. dans akımı","y":"Viral Kutu","k":"eglence_video","n":[0.0,0.9,0.0,0.0],"cb":0.0,"et":0.69,"tz":0.57,"pi":0.46},{"m":"sinir ağı mimarileri alanında yeni bir çalışma yayımlandı. Özetliyorum.","y":"Araştırma Özeti","k":"bilim_teknoloji","n":[0.75,0.0,0.0,0.0],"cb":0.0,"et":0.48,"tz":0.49,"pi":0.15},{"m":"takım çalışması için öneriniz var mı? Deneyimi olanlar yazsın.","y":"Onur","k":"soru_tartisma","n":[0.0,0.0,0.0,1.0],"cb":0.0,"et":0.54,"tz":0.54,"pi":0.16},{"m":"Bugün yazıcı kuyruğu yaşadım, hâlâ inanamıyorum.","y":"laboratuvar kaçkını","k":"mizah","n":[0.0,0.6,0.0,0.0],"cb":0.0,"et":0.73,"tz":0.73,"pi":0.2},{"m":"bilinen bir marka tartışması büyüyor. Taraflar birbirine girdi.","y":"Bunu Gördünüz mü?","k":"clickbait_kiskirtici","n":[0.0,0.0,0.25,0.0],"cb":0.9,"et":0.81,"tz":0.69,"pi":0.78},{"m":"elektrik devreleri öğrenmek isteyenler için hazırladığım yol haritası.","y":"Kürsü","k":"egitim_anlatim","n":[0.82,0.0,0.0,0.0],"cb":0.0,"et":0.43,"tz":0.68,"pi":0.14},{"m":"girişim kurma için öneriniz var mı? Deneyimi olanlar yazsın.","y":"Yiğit","k":"soru_tartisma","n":[0.0,0.0,0.0,1.0],"cb":0.0,"et":0.65,"tz":0.1,"pi":0.13},{"m":"Bu videoyu izlemeden geçme. yemek tarifi hızlı çekim","y":"Akış TV","k":"eglence_video","n":[0.0,0.6,0.0,0.0],"cb":0.0,"et":0.78,"tz":0.35,"pi":0.49},{"m":"dans akımı — son 10 saniye için kal.","y":"İzle Geç","k":"eglence_video","n":[0.0,0.7,0.0,0.0],"cb":0.0,"et":0.74,"tz":0.68,"pi":0.26},{"m":"bu alışkanlık hakkında kimsenin söylemediği GERÇEK ortaya çıktı!","y":"Bunu Gördünüz mü?","k":"clickbait_kiskirtici","n":[0.0,0.12,0.3,0.0],"cb":1.0,"et":0.98,"tz":0.68,"pi":0.72},{"m":"şehir planlaması: kısa vadeli ve uzun vadeli sonuçları ne olur?","y":"Uzun Yazı","k":"gundem_analiz","n":[0.0,0.0,1.0,0.28],"cb":0.0,"et":0.47,"tz":0.68,"pi":0.15},{"m":"Uzun zamandır proje teslimi yapmamıştık. Güzeldi.","y":"Selin","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.3],"cb":0.0,"et":0.52,"tz":0.34,"pi":0.04},{"m":"tarım üretimi: kısa vadeli ve uzun vadeli sonuçları ne olur?","y":"Analiz Defteri","k":"gundem_analiz","n":[0.0,0.0,1.0,0.28],"cb":0.0,"et":0.52,"tz":0.63,"pi":0.09},{"m":"füzyon enerjisi hakkında çok konuşulan ama yanlış bilinen bir şey var.","y":"Bilim Kısaca","k":"bilim_teknoloji","n":[0.3,0.0,0.0,0.0],"cb":0.0,"et":0.43,"tz":0.05,"pi":0.09},{"m":"yeni yönetmelik: bugün açıklanan verilere göre durum.","y":"Şehir Bülteni","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.75,"tz":0.09,"pi":0.07},{"m":"tarım üretimi: kısa vadeli ve uzun vadeli sonuçları ne olur?","y":"Uzun Yazı","k":"gundem_analiz","n":[0.0,0.0,1.0,0.28],"cb":0.0,"et":0.51,"tz":0.74,"pi":0.14},{"m":"tarım üretimi meselesini rakamlarla inceledim. Detaylı analiz.","y":"Rakamların Dili","k":"gundem_analiz","n":[0.53,0.0,0.75,0.0],"cb":0.0,"et":0.58,"tz":0.07,"pi":0.29},{"m":"akışkanlar mekaniği öğrenmek isteyenler için hazırladığım yol haritası.","y":"Anlatarak Öğren","k":"egitim_anlatim","n":[0.82,0.0,0.0,0.0],"cb":0.0,"et":0.35,"tz":0.55,"pi":0.16},{"m":"Bu videoyu izlemeden geçme. dans akımı","y":"İzle Geç","k":"eglence_video","n":[0.0,0.9,0.0,0.0],"cb":0.0,"et":0.81,"tz":0.81,"pi":0.38},{"m":"genç işsizliği: kısa vadeli ve uzun vadeli sonuçları ne olur?","y":"Veriyle Bakış","k":"gundem_analiz","n":[0.0,0.0,1.0,0.28],"cb":0.0,"et":0.61,"tz":0.79,"pi":0.24},{"m":"genç işsizliği meselesini rakamlarla inceledim. Detaylı analiz.","y":"Veriyle Bakış","k":"gundem_analiz","n":[0.53,0.0,0.78,0.0],"cb":0.0,"et":0.6,"tz":0.89,"pi":0.19},{"m":"Herkes bilinen bir marka konusunda yanılıyor. İşte asıl sebep.","y":"Gündem Şok","k":"clickbait_kiskirtici","n":[0.25,0.25,0.25,0.25],"cb":0.9,"et":0.92,"tz":0.63,"pi":0.74},{"m":"SON DAKİKA: sınav takvimi ile ilgili açıklama yapıldı.","y":"Haber Akışı","k":"son_dakika_haber","n":[0.4,0.0,1.0,0.0],"cb":0.2,"et":0.76,"tz":0.96,"pi":0.08},{"m":"Adım adım CNC tezgâh ayarı. Başlangıç seviyesi için.","y":"Tezgâh Başı","k":"nasil_yapilir","n":[0.45,0.0,0.0,0.0],"cb":0.0,"et":0.39,"tz":0.55,"pi":0.21},{"m":"Bugün yazıcı kuyruğu yaşadım, hâlâ inanamıyorum.","y":"geç kalan öğrenci","k":"mizah","n":[0.0,0.6,0.0,0.0],"cb":0.0,"et":0.75,"tz":0.37,"pi":0.4},{"m":"Herkes yeni çıkan ürün konusunda yanılıyor. İşte asıl sebep.","y":"Trend Merkez","k":"clickbait_kiskirtici","n":[0.25,0.25,0.25,0.25],"cb":0.9,"et":1.0,"tz":0.65,"pi":0.83},{"m":"Bu videoyu izlemeden geçme. yemek tarifi hızlı çekim","y":"Akış TV","k":"eglence_video","n":[0.0,0.6,0.0,0.0],"cb":0.0,"et":0.85,"tz":0.82,"pi":0.39},{"m":"popüler bir tartışma tartışması büyüyor. Taraflar birbirine girdi.","y":"Trend Merkez","k":"clickbait_kiskirtici","n":[0.0,0.0,0.25,0.0],"cb":0.9,"et":0.9,"tz":0.9,"pi":0.6},{"m":"uzay teleskopları: neden önemli ve bize ne getirecek?","y":"Bilim Kısaca","k":"bilim_teknoloji","n":[0.55,0.0,0.0,0.28],"cb":0.0,"et":0.53,"tz":0.24,"pi":0.07},{"m":"Adım adım CV yazma. Başlangıç seviyesi için.","y":"Tezgâh Başı","k":"nasil_yapilir","n":[0.45,0.0,0.0,0.0],"cb":0.0,"et":0.37,"tz":0.61,"pi":0.01},{"m":"bölüm seçimi konusunda ne düşünüyorsunuz? Gerçekten merak ediyorum.","y":"Deniz","k":"soru_tartisma","n":[0.0,0.0,0.0,1.0],"cb":0.0,"et":0.67,"tz":0.13,"pi":0.08},{"m":"makine öğrenmesi hakkında bilmen gereken 7 temel kavram.","y":"Mühendislik Notları","k":"egitim_anlatim","n":[1.0,0.0,0.0,0.0],"cb":0.0,"et":0.42,"tz":0.02,"pi":0.08},{"m":"Bu videoyu izlemeden geçme. kedi refleksleri","y":"Günün Videosu","k":"eglence_video","n":[0.0,0.9,0.0,0.0],"cb":0.0,"et":0.75,"tz":0.02,"pi":0.42},{"m":"Bugün ekipçe buluşma. İyi ki varsınız.","y":"Ayşe","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,1.0],"cb":0.0,"et":0.54,"tz":0.77,"pi":0.15},{"m":"yapay zekâ güvenliği hakkında çok konuşulan ama yanlış bilinen bir şey var.","y":"Araştırma Özeti","k":"bilim_teknoloji","n":[0.3,0.0,0.0,0.0],"cb":0.0,"et":0.54,"tz":0.19,"pi":0.04},{"m":"genç işsizliği: kısa vadeli ve uzun vadeli sonuçları ne olur?","y":"Analiz Defteri","k":"gundem_analiz","n":[0.0,0.0,1.0,0.28],"cb":0.0,"et":0.65,"tz":0.8,"pi":0.29},{"m":"Bugün takım antrenmanı. İyi ki varsınız.","y":"Mert","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.47],"cb":0.0,"et":0.57,"tz":0.29,"pi":0.0},{"m":"Bugün asistan hocam yaşadım, hâlâ inanamıyorum.","y":"laboratuvar kaçkını","k":"mizah","n":[0.0,0.6,0.0,0.0],"cb":0.0,"et":0.82,"tz":0.61,"pi":0.31},{"m":"sinir ağı mimarileri alanında yeni bir çalışma yayımlandı. Özetliyorum.","y":"Laboratuvar Notu","k":"bilim_teknoloji","n":[0.75,0.0,0.0,0.0],"cb":0.0,"et":0.54,"tz":0.7,"pi":0.03},{"m":"Sizce ilk iş deneyimi nasıl çözülür?","y":"Onur","k":"soru_tartisma","n":[0.35,0.0,0.0,1.0],"cb":0.0,"et":0.73,"tz":0.49,"pi":0.07},{"m":"3 milyon izlenme almış dans akımı videosu.","y":"Viral Kutu","k":"eglence_video","n":[0.0,0.75,0.0,0.0],"cb":0.0,"et":0.75,"tz":0.33,"pi":0.45},{"m":"CRISPR hakkında çok konuşulan ama yanlış bilinen bir şey var.","y":"Teknoloji Gündemi","k":"bilim_teknoloji","n":[0.3,0.0,0.3,0.0],"cb":0.2,"et":0.5,"tz":0.83,"pi":0.23},{"m":"o meşhur yöntem tartışması büyüyor. Taraflar birbirine girdi.","y":"Bunu Gördünüz mü?","k":"clickbait_kiskirtici","n":[0.09,0.0,0.25,0.0],"cb":0.9,"et":0.99,"tz":0.98,"pi":0.84},{"m":"bölüm seçimi konusunda ne düşünüyorsunuz? Gerçekten merak ediyorum.","y":"Deniz","k":"soru_tartisma","n":[0.0,0.0,0.0,1.0],"cb":0.0,"et":0.67,"tz":0.81,"pi":0.07},{"m":"hava durumu uyarısı konusunda resmî kurum bilgilendirmesi yayımlandı.","y":"Şehir Bülteni","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.64,"tz":0.91,"pi":0.27},{"m":"yapay zekâ güvenliği: neden önemli ve bize ne getirecek?","y":"Teknoloji Gündemi","k":"bilim_teknoloji","n":[0.55,0.0,0.0,0.28],"cb":0.0,"et":0.48,"tz":0.17,"pi":0.11},{"m":"Bu videoyu izlemeden geçme. dans akımı","y":"İzle Geç","k":"eglence_video","n":[0.0,0.9,0.0,0.0],"cb":0.0,"et":0.88,"tz":0.44,"pi":0.38},{"m":"Herkes o meşhur yöntem konusunda yanılıyor. İşte asıl sebep.","y":"Gündem Şok","k":"clickbait_kiskirtici","n":[0.09,0.0,0.0,0.0],"cb":0.9,"et":0.99,"tz":0.46,"pi":0.67},{"m":"şaşırtan illüzyon — son 10 saniye için kal.","y":"Akış TV","k":"eglence_video","n":[0.0,1.0,0.0,0.0],"cb":0.0,"et":0.76,"tz":0.15,"pi":0.38},{"m":"yeni yönetmelik konusunda resmî kurum bilgilendirmesi yayımlandı.","y":"Haber Akışı","k":"son_dakika_haber","n":[0.0,0.0,1.0,0.0],"cb":0.0,"et":0.56,"tz":0.35,"pi":0.14},{"m":"CV yazma konusunda 2 yılda öğrendiklerimi tek yazıda topladım.","y":"Prototip Defteri","k":"nasil_yapilir","n":[0.4,0.0,0.0,0.0],"cb":0.0,"et":0.31,"tz":0.29,"pi":0.16},{"m":"Uzun zamandır atölye günü yapmamıştık. Güzeldi.","y":"Mert","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.3],"cb":0.0,"et":0.54,"tz":0.21,"pi":0.01},{"m":"Herkes o meşhur yöntem konusunda yanılıyor. İşte asıl sebep.","y":"Trend Merkez","k":"clickbait_kiskirtici","n":[0.09,0.0,0.0,0.0],"cb":0.9,"et":0.78,"tz":0.31,"pi":0.64},{"m":"Sizce ilk iş deneyimi nasıl çözülür?","y":"Ceren","k":"soru_tartisma","n":[0.35,0.0,0.0,1.0],"cb":0.0,"et":0.66,"tz":0.89,"pi":0.18},{"m":"yazıcı kuyruğu ile ilgili bu kadar komik bir şey görmemiştim.","y":"son sıra","k":"mizah","n":[0.0,0.75,0.0,0.0],"cb":0.0,"et":0.76,"tz":0.88,"pi":0.31},{"m":"eğitim politikaları hakkında herkesin atladığı bir nokta var.","y":"Uzun Yazı","k":"gundem_analiz","n":[0.0,0.0,0.68,0.0],"cb":0.0,"et":0.58,"tz":0.91,"pi":0.16},{"m":"Sizce girişim kurma nasıl çözülür?","y":"Yiğit","k":"soru_tartisma","n":[0.35,0.0,0.0,1.0],"cb":0.0,"et":0.52,"tz":0.44,"pi":0.15},{"m":"Uzun zamandır doğum günü yapmamıştık. Güzeldi.","y":"Ayşe","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.3],"cb":0.0,"et":0.49,"tz":0.98,"pi":0.09},{"m":"Bugün proje teslimi. İyi ki varsınız.","y":"Mert","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.47],"cb":0.0,"et":0.55,"tz":0.98,"pi":0.12},{"m":"Herkes bilinen bir marka konusunda yanılıyor. İşte asıl sebep.","y":"Bunu Gördünüz mü?","k":"clickbait_kiskirtici","n":[0.25,0.25,0.25,0.25],"cb":0.9,"et":0.85,"tz":0.72,"pi":0.7},{"m":"Bu videoyu izlemeden geçme. spor hareketi","y":"Akış TV","k":"eglence_video","n":[0.0,0.6,0.0,0.0],"cb":0.0,"et":0.81,"tz":0.95,"pi":0.47},{"m":"bilinen bir marka tartışması büyüyor. Taraflar birbirine girdi.","y":"Bunu Gördünüz mü?","k":"clickbait_kiskirtici","n":[0.0,0.0,0.25,0.0],"cb":0.9,"et":0.82,"tz":0.92,"pi":0.82},{"m":"3 milyon izlenme almış kedi refleksleri videosu.","y":"İzle Geç","k":"eglence_video","n":[0.0,0.75,0.0,0.0],"cb":0.0,"et":0.81,"tz":0.03,"pi":0.42},{"m":"ekipçe buluşma için herkese teşekkürler.","y":"Ayşe","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,1.0],"cb":0.0,"et":0.44,"tz":0.93,"pi":0.18},{"m":"sabah dersleri deyince aklıma gelen tek şey.","y":"geç kalan öğrenci","k":"mizah","n":[0.0,0.3,0.0,0.0],"cb":0.0,"et":0.68,"tz":0.18,"pi":0.31},{"m":"füzyon enerjisi alanında yeni bir çalışma yayımlandı. Özetliyorum.","y":"Bilim Kısaca","k":"bilim_teknoloji","n":[0.75,0.0,0.0,0.0],"cb":0.0,"et":0.41,"tz":0.69,"pi":0.06},{"m":"Fourier dönüşümü hakkında bilmen gereken 7 temel kavram.","y":"Formül ve Ötesi","k":"egitim_anlatim","n":[0.6,0.0,0.0,0.0],"cb":0.0,"et":0.39,"tz":0.07,"pi":0.05},{"m":"Uzun zamandır takım antrenmanı yapmamıştık. Güzeldi.","y":"Ayşe","k":"arkadas_paylasimi","n":[0.0,0.0,0.0,0.3],"cb":0.0,"et":0.41,"tz":0.51,"pi":0.12},{"m":"veri yapıları konusunu 5 dakikada anlatıyorum. Baştan sona örnekli.","y":"Anlatarak Öğren","k":"egitim_anlatim","n":[1.0,0.0,0.0,0.0],"cb":0.0,"et":0.34,"tz":0.51,"pi":0.12},{"m":"katı hal bataryaları hakkında çok konuşulan ama yanlış bilinen bir şey var.","y":"Bilim Kısaca","k":"bilim_teknoloji","n":[0.3,0.0,0.0,0.0],"cb":0.0,"et":0.58,"tz":0.02,"pi":0.06},{"m":"Üniversitede kimsenin anlatmadığı şekilde makine öğrenmesi. Uzun anlatım.","y":"Formül ve Ötesi","k":"egitim_anlatim","n":[0.4,0.0,0.0,0.0],"cb":0.0,"et":0.33,"tz":0.1,"pi":0.04},{"m":"dans akımı — son 10 saniye için kal.","y":"Akış TV","k":"eglence_video","n":[0.0,0.7,0.0,0.0],"cb":0.0,"et":0.77,"tz":0.33,"pi":0.31},{"m":"sinir ağı mimarileri hakkında çok konuşulan ama yanlış bilinen bir şey var.","y":"Bilim Kısaca","k":"bilim_teknoloji","n":[0.3,0.0,0.0,0.0],"cb":0.0,"et":0.43,"tz":1.0,"pi":0.19}];
+
+const NIYETLER = {
+  ogrenmek:       { vektor: [1.00, 0.15, 0.15, 0.05], isim: "Öğrenmek",        not: "Yeni bir şey öğrenmek istiyorum" },
+  eglenmek:       { vektor: [0.10, 1.00, 0.05, 0.25], isim: "Eğlenmek",        not: "Kafa dağıtmak istiyorum" },
+  haberdar_olmak: { vektor: [0.20, 0.05, 1.00, 0.10], isim: "Haberdar olmak",  not: "Gündemi takip etmek istiyorum" },
+  sosyallesmek:   { vektor: [0.10, 0.30, 0.05, 1.00], isim: "Sosyalleşmek",    not: "Tanıdıklarımı görmek istiyorum" },
+  dolasmak:       { vektor: [0.40, 0.55, 0.40, 0.45], isim: "Sadece dolaşmak", not: "Belirli bir amacım yok" }
+};
+
+const KATEGORI_ADI = {
+  egitim_anlatim: "eğitim", nasil_yapilir: "nasıl yapılır", bilim_teknoloji: "bilim",
+  mizah: "mizah", eglence_video: "eğlence", son_dakika_haber: "haber",
+  gundem_analiz: "analiz", arkadas_paylasimi: "arkadaş", soru_tartisma: "tartışma",
+  clickbait_kiskirtici: "clickbait"
+};
+
+/* ── Skorlama ─────────────────────────────────────────── */
+
+function kosinus(a, b) {
+  let nokta = 0, na = 0, nb = 0;
+  for (let i = 0; i < a.length; i++) { nokta += a[i]*b[i]; na += a[i]*a[i]; nb += b[i]*b[i]; }
+  if (na === 0 || nb === 0) return 0;
+  return nokta / (Math.sqrt(na) * Math.sqrt(nb));
+}
+
+/* Birden fazla niyet seçilebilir. Bir gönderinin uyumu, seçilen niyetler
+   içindeki EN İYİ eşleşmesidir — ortalaması değil.
+
+   Neden en iyisi? Kullanıcı "öğrenmek + eğlenmek" dediğinde istediği, hem
+   öğretici hem eğlenceli olan melez gönderiler değil; akışın her iki
+   ihtiyacı da karşılamasıdır. Vektörlerin ortalaması alınsaydı saf eğitim
+   içeriği de saf mizah da cezalandırılır, ortada kalan içerik öne çıkardı.
+   Maksimum alınca saf eğitim 1.0, saf mizah 1.0 alır; çeşitlilik kısıtı da
+   ikisinin akışta birlikte yer almasını sağlar. */
+function pusulaSkor(g, niyetVektorleri) {
+  let uyum = 0;
+  for (const v of niyetVektorleri) {
+    const u = kosinus(g.n, v);
+    if (u > uyum) uyum = u;
+  }
+  const kalite = 1 - g.cb;
+  const taban = 0.70*uyum + 0.15*g.tz + 0.15*g.et;
+  return { skor: taban * kalite, uyum, kalite, taban };
+}
+
+/* Niyet adları -> vektör listesi. Tek niyet de liste olarak gelir. */
+function niyetVektorleri(niyetAdlari) {
+  return niyetAdlari.map(ad => NIYETLER[ad].vektor);
+}
+
+function klasikSkor(g) {
+  return 0.70*g.et + 0.20*g.tz + 0.10*(1 - g.cb);
+}
+
+/* Çeşitlilik kısıtı: aynı kategoriden en fazla `sinir` gönderi */
+function cesitlilikFiltresi(sirali, adet, sinir) {
+  const secilen = [], sayac = {};
+  for (const g of sirali) {
+    if (secilen.length >= adet) break;
+    if ((sayac[g.k] || 0) >= sinir) continue;
+    secilen.push(g);
+    sayac[g.k] = (sayac[g.k] || 0) + 1;
+  }
+  return secilen;
+}
+
+function pusulaSirala(niyetAdlari, adet = 40) {
+  const v = niyetVektorleri(niyetAdlari);
+  const sirali = HAVUZ.map(g => ({ g, s: pusulaSkor(g, v) }))
+                      .sort((a, b) => b.s.skor - a.s.skor)
+                      .map(x => Object.assign({}, x.g, { _skor: x.s }));
+  return cesitlilikFiltresi(sirali, adet, 5);
+}
+
+function klasikSirala(adet = 40) {
+  const sirali = HAVUZ.map(g => Object.assign({}, g, { _skor: { skor: klasikSkor(g) } }))
+                      .sort((a, b) => b._skor.skor - a._skor.skor);
+  return cesitlilikFiltresi(sirali, adet, 5);
+}
+
+function metrikler(akis, niyetAdlari) {
+  const vler = niyetVektorleri(niyetAdlari);
+  const ilk = akis.slice(0, 20);
+  let uyum = 0, pis = 0, etk = 0, cb = 0;
+  for (const g of ilk) {
+    uyum += Math.max(...vler.map(v => kosinus(g.n, v)));
+    pis += g.pi;
+    etk += g.et;
+    if (g.cb > 0.4) cb++;
+  }
+  const n = ilk.length || 1;
+  return {
+    uyum: uyum/n, pismanlik: pis/n, etkilesim: etk/n,
+    clickbait: cb/n, tatmin: (uyum/n) * (1 - pis/n)
+  };
+}
+
+/* ── Durum ────────────────────────────────────────────── */
+
+const durum = {
+  mod: "deneyim",
+  ekran: "kapi",
+  niyetler: [],        // birden fazla seçilebilir
+  butce: 15,
+  harcanan: 0,
+  akis: [],
+  acikNeden: null,
+  memnuniyet: null     // kapanışta verilen cevap
+};
+
+/* "Sadece dolaşmak" tek başına seçilir: belirli bir amacın yokken
+   aynı anda belirli bir amacın olduğunu söylemek çelişkilidir. */
+const YALNIZ_SECILEN = "dolasmak";
+
+function niyetSec(ad) {
+  const secili = durum.niyetler.includes(ad);
+  if (secili) {
+    durum.niyetler = durum.niyetler.filter(x => x !== ad);
+  } else if (ad === YALNIZ_SECILEN) {
+    durum.niyetler = [ad];
+  } else {
+    durum.niyetler = durum.niyetler.filter(x => x !== YALNIZ_SECILEN).concat(ad);
+  }
+}
+
+/* Seçilen niyetlerin okunabilir adı: "Öğrenmek ve eğlenmek" */
+function niyetAdi(liste) {
+  const adlar = (liste || durum.niyetler).map(k => NIYETLER[k].isim);
+  if (adlar.length === 0) return "—";
+  if (adlar.length === 1) return adlar[0];
+  const son = adlar[adlar.length - 1].toLowerCase();
+  return adlar.slice(0, -1).join(", ") + " ve " + son;
+}
+
+/* Akış uzunluğu bütçeyle orantılıdır: gönderi başına ~30 saniye.
+   Çeşitlilik kısıtı (kategori başına 5, 10 kategori) toplamı 50 ile sınırlar.
+   Sınırsız modda sabit 40 gönderi gösterilir. */
+function akisUzunlugu() {
+  if (!durum.butce) return 40;
+  return Math.min(50, Math.round(durum.butce * 2));
+}
+
+/* Bağlamdan niyet tahmini — kural tabanlı (siralama.py'deki mantık) */
+function niyetTahminEt() {
+  const saat = new Date().getHours();
+  if (saat >= 7 && saat < 10)  return "haberdar_olmak";
+  if (saat >= 10 && saat < 17) return "ogrenmek";
+  if (saat >= 17 && saat < 22) return "sosyallesmek";
+  return "eglenmek";
+}
+
+const TAHMIN = niyetTahminEt();
+
+/* Sayfa dili. Etiket olarak yazılamıyor çünkü bu dosya bir gövde parçası
+   olarak da gömülebiliyor; ekran okuyucunun Türkçe metni İngilizce
+   telaffuz etmemesi için kökün dilini burada işaretliyoruz. */
+document.documentElement.lang = "tr";
+
+/* ── Yardımcılar ──────────────────────────────────────── */
+
+const el = (h) => { const d = document.createElement("div"); d.innerHTML = h.trim(); return d.firstElementChild; };
+const kacir = (s) => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+
+function halkaSVG(oran) {
+  const r = 10, c = 2 * Math.PI * r;
+  const dolu = Math.min(1, oran) * c;
+  const renk = oran > 0.8 ? "var(--kor)" : "var(--aksan)";
+  return `<svg class="halka" viewBox="0 0 26 26" aria-hidden="true">
+    <circle cx="13" cy="13" r="${r}" fill="none" stroke="var(--cizgi)" stroke-width="2.5"/>
+    <circle cx="13" cy="13" r="${r}" fill="none" stroke="${renk}" stroke-width="2.5"
+      stroke-dasharray="${dolu} ${c}" stroke-linecap="round" transform="rotate(-90 13 13)"/>
+  </svg>`;
+}
+
+/* ── Ekran çizimleri ──────────────────────────────────── */
+
+function cizNiyetKapisi() {
+  const t = NIYETLER[TAHMIN];
+  const butonlar = Object.entries(NIYETLER).map(([k, v]) => {
+    const secili = durum.niyetler.includes(k);
+    /* "Sadece dolaşmak" başka bir niyetle birlikte seçilemez; tersi de geçerli */
+    const kilitli = !secili && (
+      k === YALNIZ_SECILEN
+        ? durum.niyetler.length > 0
+        : durum.niyetler.includes(YALNIZ_SECILEN)
+    );
+    return `
+    <button class="niyet-btn" data-niyet="${k}" aria-pressed="${secili}"
+            ${kilitli ? 'data-kilitli="1"' : ""}>
+      <span>
+        <span class="isim">${v.isim}</span><br>
+        <span class="not">${v.not}</span>
+      </span>
+      <span class="isaret">seçildi</span>
+    </button>`;
+  }).join("");
+
+  const butceler = [15, 30, 0].map(d => `
+    <button data-butce="${d}" aria-pressed="${durum.butce === d}">
+      ${d === 0 ? "Sınırsız" : d + " dk"}
+    </button>`).join("");
+
+  return `
+    <div class="kapi">
+      <div class="tahmin-rozet">
+        <span aria-hidden="true">◐</span>
+        Saate göre tahminimiz: ${t.isim.toLowerCase()}
+      </div>
+      <div class="selam">Bugün ne için buradasın?</div>
+      <div class="aciklama">
+        Birden fazla seçebilirsin. &ldquo;Sadece dolaşmak&rdquo; tek başına seçilir.
+        İstersen bu adımı geçebilirsin.
+      </div>
+      <div class="niyetler">${butonlar}</div>
+      <div class="butce">
+        <div class="etiket">Zaman bütçesi</div>
+        <div class="butce-secim">${butceler}</div>
+      </div>
+      <button class="basla" id="basla-btn" ${durum.niyetler.length ? "" : "disabled"}>Akışı aç</button>
+      <button class="gec" id="gec-btn">Bu adımı geç</button>
+    </div>`;
+}
+
+function gonderiHTML(g, i, gosterNeden) {
+  const bas = (g.y || "?").trim()[0].toUpperCase();
+  const cb = g.cb > 0.4;
+  const acik = durum.acikNeden === i;
+
+  let kutu = "";
+  if (acik && g._skor && g._skor.uyum !== undefined) {
+    const s = g._skor;
+    kutu = `
+      <div class="aciklama-kutu">
+        <div class="satir"><span>Niyet uyumu × 0.70</span><span>${(s.uyum*0.70).toFixed(3)}</span></div>
+        <div class="satir"><span>Tazelik × 0.15</span><span>${(g.tz*0.15).toFixed(3)}</span></div>
+        <div class="satir"><span>Etkileşim × 0.15</span><span>${(g.et*0.15).toFixed(3)}</span></div>
+        <div class="satir"><span>Kalite çarpanı</span><span>× ${s.kalite.toFixed(2)}</span></div>
+        <div class="satir toplam"><span>Toplam skor</span><span>${s.skor.toFixed(3)}</span></div>
+      </div>`;
+  }
+
+  return `
+    <article class="gonderi">
+      <div class="gonderi-ust">
+        <div class="avatar" aria-hidden="true">${kacir(bas)}</div>
+        <span class="yazar">${kacir(g.y)}</span>
+      </div>
+      <div class="metin">${kacir(g.m)}</div>
+      <div class="rozetler">
+        <span class="rozet">${KATEGORI_ADI[g.k] || g.k}</span>
+        ${cb ? '<span class="rozet cb">clickbait işareti</span>' : ""}
+        ${gosterNeden ? `<button class="neden" data-neden="${i}">${acik ? "gizle" : "neden bu?"}</button>` : ""}
+      </div>
+      ${kutu}
+    </article>`;
+}
+
+function cizAkis(akis, gosterNeden) {
+  return `<div class="akis">${akis.map((g, i) => gonderiHTML(g, i, gosterNeden)).join("")}</div>`;
+}
+
+/* Her niyete hizmet eden kategoriler. Kapanış özeti "niyetine uygun kaç
+   gönderi gördün" diye sorar; bu soru niyete göre değişir. Önceden sabit
+   "Öğretici içerik" yazıyordu ve eğlenmek isteyen kullanıcıya da o
+   gösteriliyordu — anlamsızdı.
+   "Dolaşmak" niyetinin tek bir hedef kategorisi yok; orada çeşitlilik
+   gösterilir, çünkü amaçsız gezinmede iyi sonuç dar değil geniş olandır. */
+const NIYET_HEDEFI = {
+  ogrenmek:       { etiket: "Öğretici içerik",  kategoriler: ["egitim_anlatim", "nasil_yapilir", "bilim_teknoloji"] },
+  eglenmek:       { etiket: "Eğlendirici içerik", kategoriler: ["mizah", "eglence_video"] },
+  haberdar_olmak: { etiket: "Haber ve analiz",  kategoriler: ["son_dakika_haber", "gundem_analiz"] },
+  sosyallesmek:   { etiket: "Sosyal içerik",    kategoriler: ["arkadas_paylasimi", "soru_tartisma"] },
+  dolasmak:       null
+};
+
+function cizKapanis() {
+  const m = metrikler(durum.akis, durum.niyetler);
+
+  /* Görülen gönderi sayısı harcanan zamandan türetilir; harcanan dakikadır,
+     gönderi sayısı değil. Önceden dakika sayısı doğrudan "gördüğün gönderi"
+     olarak yazılıyordu. */
+  const gorulen = durum.butce
+    ? Math.min(durum.akis.length,
+               Math.round(durum.akis.length * durum.harcanan / durum.butce))
+    : durum.akis.length;
+  const gorulenler = durum.akis.slice(0, gorulen);
+
+  /* Birden fazla niyet seçildiyse her biri için ayrı satır gösterilir;
+     böylece kullanıcı hangi ihtiyacının ne kadar karşılandığını görür.
+     "Sadece dolaşmak"ın hedef kategorisi yok, orada çeşitlilik yazılır. */
+  const hedefSatirlar = durum.niyetler.map(ad => {
+    const hedef = NIYET_HEDEFI[ad];
+    if (!hedef) {
+      return `<div class="ozet-satir"><span>Farklı kategori</span><b>${
+        new Set(gorulenler.map(g => g.k)).size
+      }</b></div>`;
+    }
+    return `<div class="ozet-satir"><span>${hedef.etiket}</span><b>${
+      gorulenler.filter(g => hedef.kategoriler.includes(g.k)).length
+    }</b></div>`;
+  }).join("");
+
+  return `
+    <div class="orta-ekran">
+      <h2>Bugünlük bu kadar</h2>
+      <p>${durum.butce} dakikalık bütçen doldu. Akış kesilmedi, tamamlandı.</p>
+      <div class="ozet-kutu">
+        <div class="ozet-satir"><span>Niyetin</span><b>${niyetAdi()}</b></div>
+        <div class="ozet-satir"><span>Gördüğün gönderi</span><b>${gorulen}</b></div>
+        ${hedefSatirlar}
+        <div class="ozet-satir"><span>Niyet uyumu</span><b>${(m.uyum*100).toFixed(0)}%</b></div>
+      </div>
+      <div class="ikili">
+        <button class="ikincil" id="devam-btn">10 dk daha</button>
+        <button class="birincil" id="bitir-btn">Kapat</button>
+      </div>
+    </div>`;
+}
+
+function cizMemnuniyet() {
+  return `
+    <div class="orta-ekran">
+      <h2>Bu oturum sana iyi geldi mi?</h2>
+      <p>
+        Cevabın kaydedilir ve oturum özetinde gösterilir. Ürün sürümünde
+        sıralamayı eğiten ödül modelini besleyecek — prototipte henüz
+        sıralamayı değiştirmiyor.
+      </p>
+      <div class="duygular">
+        <button class="duygu" data-memnun="3" aria-label="İyi geldi">😊</button>
+        <button class="duygu" data-memnun="2" aria-label="Kararsızım">😐</button>
+        <button class="duygu" data-memnun="1" aria-label="İyi gelmedi">😞</button>
+      </div>
+    </div>`;
+}
+
+function cizPanel() {
+  const m = metrikler(durum.akis, durum.niyetler);
+  const olcu = (ad, deger, metin, kor) => `
+    <div class="olcu">
+      <div class="olcu-ust"><span>${ad}</span><b>${metin}</b></div>
+      <div class="cubuk"><i class="${kor ? "kor" : ""}" style="width:${Math.round(deger*100)}%"></i></div>
+    </div>`;
+
+  return `
+    <div class="panel">
+      <h2>Zaman Aynası</h2>
+      <div class="alt">Bu oturumun özeti. Burada seni yargılayan hiçbir şey yok.</div>
+      ${olcu("Niyet–sonuç uyumu", m.uyum, (m.uyum*100).toFixed(0) + "%")}
+      ${olcu("Oturum memnuniyeti", m.tatmin, (m.tatmin*100).toFixed(0) + "%")}
+      ${olcu("Pişmanlık oranı", m.pismanlik, (m.pismanlik*100).toFixed(0) + "%", true)}
+      ${durum.memnuniyet ? `
+      <div class="olcu">
+        <div class="olcu-ust"><span>Senin cevabın</span><b>${
+          { 3: "İyi geldi", 2: "Kararsızım", 1: "İyi gelmedi" }[durum.memnuniyet]
+        }</b></div>
+        <div class="cubuk"><i style="width:${durum.memnuniyet / 3 * 100}%"></i></div>
+      </div>` : ""}
+      <p class="not-kutu" style="margin-top:18px;">
+        <strong>${niyetAdi()}</strong> niyetiyle başladığın bu oturumun
+        <strong>${(m.uyum*100).toFixed(0)}%</strong>'i hedefine ulaştı.
+      </p>
+      <p class="not-kutu" style="margin-top:10px; font-size:11.5px;">
+        Prototipte tek oturum ölçülüyor. Ürün sürümünde bu panel haftalık
+        eğilimi gösterir: hangi niyetler tatmin oluyor, hangileri sürekli
+        ıskalanıyor.
+      </p>
+      <button class="basla" style="margin-top:20px;" id="yeniden-btn">Yeni oturum</button>
+    </div>`;
+}
+
+/* ── Cihaz kabuğu ─────────────────────────────────────── */
+
+function cizCihaz(icerik, baslikMetni, oran) {
+  const yuzde = Math.round(Math.min(1, oran) * 100);
+  return `
+    <div class="cihaz">
+      <div class="cihaz-ust">
+        <div class="logo-nokta" aria-hidden="true"></div>
+        <span class="ad">NSosyal</span>
+        <div class="sag">
+          ${baslikMetni ? `<span class="halka-yuzde">${baslikMetni}</span>` : ""}
+          ${oran !== null ? halkaSVG(oran) + `<span class="halka-yuzde">${yuzde}%</span>` : ""}
+        </div>
+      </div>
+      <div class="ekran">${icerik}</div>
+    </div>`;
+}
+
+/* ── Ana çizim ────────────────────────────────────────── */
+
+function ciz() {
+  const kap = document.getElementById("cihazlar");
+
+  if (durum.mod === "karsilastirma") {
+    const niyet = durum.niyetler.length ? durum.niyetler : ["ogrenmek"];
+    const ak = pusulaSirala(niyet), kl = klasikSirala();
+    kap.innerHTML = `
+      <div class="cihaz-sarma">
+        <div class="cihaz-baslik klasik">Klasik algoritma</div>
+        ${cizCihaz(cizAkis(kl, false), "etkileşim odaklı", null)}
+      </div>
+      <div class="cihaz-sarma">
+        <div class="cihaz-baslik pusula">PUSULA · ${niyetAdi(niyet)}</div>
+        ${cizCihaz(cizAkis(ak, true), null, null)}
+      </div>`;
+    cizOlcumler(metrikler(kl, niyet), metrikler(ak, niyet));
+    document.documentElement.style.setProperty("--sicaklik", 0);
+    baglaOlaylar();
+    return;
+  }
+
+  let icerik, oran = null;
+  if (durum.ekran === "kapi")            icerik = cizNiyetKapisi();
+  /* Sınırsız modda bütçe yok; halka hiç gösterilmez (0%'de asılı kalmaz). */
+  else if (durum.ekran === "akis")     { icerik = cizAkis(durum.akis, true); oran = durum.butce ? durum.harcanan / durum.butce : null; }
+  else if (durum.ekran === "kapanis")  { icerik = cizKapanis(); oran = 1; }
+  else if (durum.ekran === "memnuniyet") icerik = cizMemnuniyet();
+  else                                   icerik = cizPanel();
+
+  kap.innerHTML = `<div class="cihaz-sarma">${cizCihaz(icerik, null, oran)}</div>`;
+
+  document.documentElement.style.setProperty("--sicaklik", oran ? Math.max(0, (oran - 0.35) / 0.65) : 0);
+
+  if (durum.niyetler.length && durum.ekran !== "kapi") {
+    cizOlcumler(metrikler(klasikSirala(), durum.niyetler), metrikler(durum.akis, durum.niyetler));
+  } else {
+    document.getElementById("olcumler").innerHTML =
+      `<p class="not-kutu">Niyet seçildiğinde ölçümler burada canlı hesaplanır.</p>`;
+  }
+
+  bildir();
+  baglaOlaylar();
+}
+
+/* Ekran değişimini ekran okuyucuya tek cümleyle duyurur. Görme engelli
+   kullanıcı, akışın yeniden sıralandığını başka türlü fark edemez. */
+function bildir() {
+  const alan = document.getElementById("bildirim");
+  if (!alan) return;
+  let metin = "";
+  if (durum.mod === "karsilastirma") {
+    metin = "Karşılaştırma modu: klasik algoritma ve PUSULA yan yana.";
+  } else if (durum.ekran === "kapi") {
+    metin = "Niyet seçim ekranı.";
+  } else if (durum.ekran === "akis") {
+    metin = `${niyetAdi()} niyetine göre ${durum.akis.length} gönderi sıralandı.`;
+  } else if (durum.ekran === "kapanis") {
+    metin = "Oturum tamamlandı, özet ekranı.";
+  } else if (durum.ekran === "memnuniyet") {
+    metin = "Memnuniyet sorusu.";
+  } else {
+    metin = "Zaman Aynası, oturum özeti.";
+  }
+  alan.textContent = metin;
+}
+
+function cizOlcumler(k, p) {
+  const satir = (ad, kv, pv, yuzde) => {
+    const b = (x) => yuzde ? (x*100).toFixed(0) + "%" : x.toFixed(3);
+    return `<div class="olcum-satir">
+      <span class="ad">${ad}</span>
+      <span class="deger k" style="width:52px;text-align:right">${b(kv)}</span>
+      <span class="deger p" style="width:52px;text-align:right">${b(pv)}</span>
+    </div>`;
+  };
+  document.getElementById("olcumler").innerHTML =
+    `<div class="karsilastirma-basi"><span class="ad"></span><span class="deger">Klasik</span><span class="deger">Pusula</span></div>` +
+    satir("Niyet uyumu", k.uyum, p.uyum, false) +
+    satir("Beklenen tatmin", k.tatmin, p.tatmin, false) +
+    satir("Pişmanlık", k.pismanlik, p.pismanlik, false) +
+    satir("Clickbait oranı", k.clickbait, p.clickbait, true) +
+    satir("Etkileşim", k.etkilesim, p.etkilesim, false);
+}
+
+/* ── Olaylar ──────────────────────────────────────────── */
+
+function baglaOlaylar() {
+  document.querySelectorAll("[data-niyet]").forEach(b =>
+    b.onclick = () => { niyetSec(b.dataset.niyet); ciz(); });
+
+  document.querySelectorAll("[data-butce]").forEach(b =>
+    b.onclick = () => { durum.butce = +b.dataset.butce; ciz(); });
+
+  const basla = document.getElementById("basla-btn");
+  if (basla) basla.onclick = () => {
+    durum.akis = pusulaSirala(durum.niyetler, akisUzunlugu());
+    durum.ekran = "akis"; durum.harcanan = 0; ciz();
+  };
+
+  const gec = document.getElementById("gec-btn");
+  if (gec) gec.onclick = () => {
+    durum.niyetler = [TAHMIN];
+    durum.akis = pusulaSirala(durum.niyetler, akisUzunlugu());
+    durum.ekran = "akis"; durum.harcanan = 0; ciz();
+  };
+
+  document.querySelectorAll("[data-neden]").forEach(b =>
+    b.onclick = () => {
+      const i = +b.dataset.neden;
+      durum.acikNeden = durum.acikNeden === i ? null : i;
+      ciz();
+    });
+
+  const devam = document.getElementById("devam-btn");
+  /* Bütçe uzatılınca akış da uzar; harcanan zaman korunur (geri gelmez). */
+  if (devam) devam.onclick = () => {
+    durum.butce += 10;
+    durum.akis = pusulaSirala(durum.niyetler, akisUzunlugu());
+    durum.ekran = "akis";
+    ciz();
+  };
+
+  const bitir = document.getElementById("bitir-btn");
+  if (bitir) bitir.onclick = () => { durum.ekran = "memnuniyet"; ciz(); };
+
+  document.querySelectorAll("[data-memnun]").forEach(b =>
+    b.onclick = () => {
+      durum.memnuniyet = +b.dataset.memnun;
+      durum.ekran = "panel";
+      ciz();
+    });
+
+  const yeniden = document.getElementById("yeniden-btn");
+  if (yeniden) yeniden.onclick = () => {
+    durum.ekran = "kapi"; durum.niyetler = []; durum.memnuniyet = null;
+    durum.harcanan = 0; durum.acikNeden = null; ciz();
+  };
+
+  /* Kaydırma zaman bütçesini tüketir.
+
+     Tüketim akıştaki ilerlemeye bağlıdır: akışın sonuna gelmek bütçeyi tam
+     olarak bitirir. Önceden sabit piksel oranı kullanılıyordu (her 118px bir
+     gönderi sayılıyordu); akış 40 gönderide sabit olduğu için 30 dakikalık
+     bütçe hiçbir zaman dolmuyordu. Halka ~%77'de takılıyor, kapanış ekranına
+     hiç ulaşılamıyordu — yani projenin asıl fikri olan "doğal bitiş"
+     denenemiyordu.
+
+     Tüketim geri sarmaz: yukarı kaydırmak harcanan zamanı geri getirmez. */
+  const ekran = document.querySelector(".ekran");
+  if (ekran && durum.ekran === "akis" && durum.butce > 0) {
+    ekran.onscroll = () => {
+      const kaydirilabilir = ekran.scrollHeight - ekran.clientHeight;
+      const ilerleme = kaydirilabilir > 4 ? ekran.scrollTop / kaydirilabilir : 1;
+      const yeni = Math.min(durum.butce,
+                            Math.max(durum.harcanan,
+                                     Math.round(ilerleme * durum.butce)));
+      if (yeni !== durum.harcanan) {
+        durum.harcanan = yeni;
+        const oran = durum.harcanan / durum.butce;
+        document.documentElement.style.setProperty("--sicaklik", Math.max(0, (oran - 0.35) / 0.65));
+        const halka = document.querySelector(".cihaz-ust .sag");
+        if (halka) halka.innerHTML = halkaSVG(oran) + `<span class="halka-yuzde">${Math.round(oran*100)}%</span>`;
+        if (durum.harcanan >= durum.butce) { durum.ekran = "kapanis"; ciz(); }
+      }
+    };
+  }
+}
+
+/* Mod ve tema */
+document.getElementById("mod-deneyim").onclick = () => {
+  durum.mod = "deneyim";
+  document.getElementById("mod-deneyim").setAttribute("aria-selected", "true");
+  document.getElementById("mod-karsilastirma").setAttribute("aria-selected", "false");
+  ciz();
+};
+document.getElementById("mod-karsilastirma").onclick = () => {
+  durum.mod = "karsilastirma";
+  document.getElementById("mod-karsilastirma").setAttribute("aria-selected", "true");
+  document.getElementById("mod-deneyim").setAttribute("aria-selected", "false");
+  ciz();
+};
+document.getElementById("tema-btn").onclick = () => {
+  const kok = document.documentElement;
+  const su = kok.getAttribute("data-theme");
+  const koyuMu = su ? su === "dark"
+    : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  kok.setAttribute("data-theme", koyuMu ? "light" : "dark");
+};
+
+ciz();
+</script>
