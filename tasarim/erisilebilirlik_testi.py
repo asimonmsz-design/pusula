@@ -8,12 +8,14 @@ sinar. Amac su cumleyi dogru kilmaktir: "erisilebilirlik bir niyet beyani
 olarak degil, olculen ve test edilen bir sart olarak ele alinmistir."
 
 Neden var: kontrast_olc.py yalnizca RENKLERI olcuyordu. Belgenin kendisine
-- dil etiketi, karakter kodlamasi, baslik sirasi, ARIA gecerliligi, klavye
+- karakter kodlamasi, belge tipi, baslik sirasi, ARIA gecerliligi, klavye
 erisimi - hicbir test bakmiyordu. Bu boslugun somut bir bedeli oldu:
-sablon.html uzun sure <!doctype>, <meta charset> ve lang="tr" olmadan
-kaldi. Tarayici kodlamayi tahmin ettigi icin hata yerel makinede
-gorunmuyordu; baska bir ortamda sayfa bozuk karakterlerle aciliyordu.
-Rapor ise lang="tr" oldugunu yaziyordu. Bu dosya o sinif hatalari yakalar.
+sablon.html uzun sure <!doctype html> ve <meta charset="utf-8"> olmadan
+kaldi. Belge quirks mode'da aciliyor, kodlama tarayicinin tahminine
+kaliyordu; UTF-8 tahmin etmeyen bir ortamda butun Turkce harfler
+bozuluyordu ve hata gelistirme makinesinde gorunmedigi icin fark
+edilmemisti. Yan panelde de baslik duzeyi h1'den h3'e atliyordu.
+Bu dosya o sinif hatalari yakalar.
 
 Denetim iki katmanda calisir:
   1) Duragan katman - pusula.html'in kendisi: belge iskeleti ve CSS.

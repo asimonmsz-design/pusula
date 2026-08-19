@@ -6,7 +6,12 @@ Sosyal medya akışını, kullanıcının ekranda geçirdiği **süreye** göre 
 başlarken **beyan ettiği niyete** göre sıralayan bir arayüz ve öneri sistemi.
 
 > **TEKNOFEST NSosyal İnovasyon Yarışması 2026**
-> Tema: Kullanıcı Katılımı ve Arayüz (UI/UX) — ikincil: Sosyal Yapay Zekâ
+> Tema: Kullanıcı Katılımı ve Arayüz (UI/UX)
+
+### 🧭 [Çalışan prototipi tarayıcıda aç](https://asimonmsz-design.github.io/pusula/)
+
+Kurulum, hesap veya klonlama gerekmez. "Karşılaştırma" sekmesi klasik sıralamayla
+PUSULA sıralamasını yan yana gösterir.
 
 ---
 
@@ -61,6 +66,7 @@ python tasarim/uygulama_uret.py
 ```
 
 Dördüncü adımdan sonra `tasarim/pusula.html` dosyasını tarayıcıda açmanız yeterli.
+Kurmadan denemek isterseniz: **https://asimonmsz-design.github.io/pusula/**
 
 **Tekrarlanabilirlik:** üretim rastgele tohumla sabitlenmiştir (`random.seed(42)`), zincir
 baştan sona yeniden çalıştırıldığında bu depodaki bütün sayılar **birebir** yeniden üretilir.
@@ -70,10 +76,11 @@ dosyasından gelir.
 ### Testler
 
 ```bash
-python tasarim/duman_testi.py      # sıralama motoru Node'da uçtan uca doğrulanır
-python tasarim/arayuz_testi.py     # 15 ekranın tamamı render edilir
-python tasarim/kontrast_olc.py     # WCAG 2.1 AA kontrast denetimi
-python kod/kontrol_clickbait.py    # clickbait tespit doğruluğu
+python tasarim/duman_testi.py            # sıralama motoru Node'da uçtan uca doğrulanır
+python tasarim/arayuz_testi.py           # 15 ekranın tamamı render edilir
+python tasarim/kontrast_olc.py           # WCAG 2.1 AA kontrast denetimi
+python tasarim/erisilebilirlik_testi.py  # belge iskeleti, ARIA, klavye, başlık sırası
+python kod/kontrol_clickbait.py          # clickbait tespit doğruluğu
 ```
 
 ---
@@ -98,7 +105,11 @@ PUSULA/
 │   ├── arayuz_testi.py           15 ekranın render testi
 │   ├── duman_testi.py            Motorun Node'da uçtan uca doğrulanması
 │   ├── kontrast_olc.py           WCAG 2.1 AA kontrast ölçümü
-    └── qr_uret.py                Anket için QR kod ve afiş üreteci
+│   ├── erisilebilirlik_testi.py  Belge iskeleti, ARIA ve klavye denetimi (22 kontrol)
+│   ├── ekran/                    Prototipten alınan ekran görüntüleri (rapordaki şekiller)
+│   └── qr_uret.py                Anket için QR kod ve afiş üreteci
+│
+└── index.html                    GitHub Pages giriş sayfası
 ```
 
 Modelin ayrıntıları, kullanıcı akışları, erişilebilirlik denetimi, veri ve etik
@@ -244,6 +255,34 @@ Kapanış özeti de her seçilen niyet için ayrı satır gösteriyor, böylece 
 Telafisi WCAG 1.4.1'in zaten istediği şey: **hiçbir bilgi tek başına renkle taşınmıyor.** Clickbait rozeti "clickbait işareti" yazısını içeriyor, zaman halkasının yanında yüzde yazıyor, seçili niyet hem renkle hem `aria-pressed="true"` ile işaretli. Renk tamamen kaldırılsa da ekran okunabiliyor.
 
 Bu bir niyet beyanı değil, test edilen bir şart: `arayuz_testi.py` akış ekranında `halka-yuzde` öğesini, karşılaştırma ekranında da "clickbait işareti" metnini arıyor. Biri silinirse test kırmızıya döner.
+
+### Belgenin kendisi de denetleniyor
+
+Kontrast ölçümü paletle ilgilidir; belgenin kendisiyle — dil etiketi, karakter kodlaması,
+başlık sırası, ARIA geçerliliği, klavye erişimi — ilgili değildir. `erisilebilirlik_testi.py`
+bu boşluğu kapatır: 22 kontrol, 8 ekran. Durağan katmanda `pusula.html`'in belge iskeleti ve
+üslup dosyası; üretilen katmanda sahte DOM üzerinde çizdirilen yedi ekranın **JavaScript'in
+ürettiği** işaret dili incelenir. Kaynak dosyada arama yapmak yeterli değildir; kullanıcının
+gördüğü işaret dilini uç anda JavaScript üretir.
+
+| Denetim grubu | Sınanan koşullar | Sonuç |
+|---|---|---|
+| Belge iskeleti | `<!doctype html>`, `lang="tr"`, `charset=utf-8`, viewport, dolu `<title>`, kapatılmış head/body | 6/6 |
+| Üslup (CSS) | `:focus-visible`, `prefers-reduced-motion`, `sr-only`'nin ekran okuyucudan gizlenmemesi, `min()` ile esneyen çerçeve | 4/4 |
+| İşaret dili | Geçerli `role` ve `aria-*` adları, `aria-pressed`/`aria-selected` doğru öğede, pozitif `tabindex` yok, düğmelerin erişilebilir adı, `alt` metni, tıklananın `<button>` olması, başlık düzeyi, `role="status"` | 9/9 |
+| Renk bağımsızlığı | Zaman halkasında yüzde, clickbait rozetinde metin, seçili niyette `aria-pressed="true"` | 3/3 |
+
+**Bu denetim yazıldığı gün üç sorun buldu.** Prototip `<!doctype html>` ve
+`<meta charset="utf-8">` olmadan yayımlanıyordu: belge quirks mode'da açılıyor, karakter
+kodlaması tarayıcının tahminine bırakılıyordu. UTF-8 tahmin etmeyen bir ortamda sayfanın
+bütün Türkçe harfleri bozuluyordu — hata geliştirme makinesinde görünmediği için uzun süre
+fark edilmedi. İkincisi, yan panelde başlık düzeyi h1'den h3'e atlıyordu. Üçüncüsü, sayfa
+dili (14 numaralı hatanın çözümü) yalnızca çalışma anında JavaScript ile atanıyordu; artık
+işaret dilinin kendisinde duruyor, betik çalışmasa da geçerli. Üçü de düzeltildi.
+
+Ders 13 numaralı hatayla aynı: **ölçmek iddia etmekten farklıdır.** Renkler ölçülüyordu,
+belge iskeleti ölçülmüyordu.
+
 
 **Kontrast (WCAG 2.1 AA).** Renkler önce göze hoş geldiği için seçilmişti; ölçünce açık temada beş çift, koyu temada iki çift eşiğin altında çıktı. Palet turkuaz–kırmızı–beyaza geçirilirken yeni değerler doğrudan ölçülerek seçildi. Kritik çiftlerin son ölçümü:
 
